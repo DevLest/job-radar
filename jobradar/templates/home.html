@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% import "_ui.html" as ui with context %}
+{% block header %}<h1>Home</h1><div class="sub">Your job search at a glance</div>{% endblock %}
+{% block content %}
+{% set done = setup|selectattr('done')|list|length %}
+
+{% if done < setup|length %}
+<div class="hero">
+  <div><h1>{% if done == 0 %}Welcome! Let's find you a great job.{% else %}You're {{ done }} of {{ setup|length }} steps in - nice!{% endif %}</h1>
+    <p>Job Radar searches job sites and your alert emails, skips what doesn't fit, and uses AI to rate what's left against your skills, pay and work style.</p></div>
+  <button class="btn lg" data-open-find>{{ icon('search', 17) }} Find jobs now</button>
+</div>
+<div class="card" style="margin-bottom:20px">
+  <div class="card-head"><h2>Get set up</h2><span class="spacer"></span><span class="muted small">{{ done }} / {{ setup|length }} done</span></div>
+  <div class="progressbar" style="margin-bottom:8px"><div style="width: {{ (done / setup|length * 100)|round }}%"></div></div>
+  <ul class="checklist">
+    {% for s in setup %}
+    <li class="{{ 'done' if s.done }}">
+      <span class="dot">{{ icon('check', 16) if s.done else icon(s.icon, 16) }}</span>
+      <div style="flex:1"><div class="t">{{ s.title }}</div><div class="small muted">{{ s.text }}</div></div>
+      {% if not s.done %}<a class="btn sm {{ 'primary' if loop.index0 == (setup|map(attribute='done')|list).index(false) }}" href="{{ s.url }}">{{ s.cta }} {{ icon('arrow-right', 14) }}</a>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="grid g4" style="margin-bottom:20px">
+  <a class="card stat" href="{{ url_for('jobs', tab='best') }}" style="color:inherit;text-decoration:none"><div class="ico green">{{ icon('star', 22) }}</div>
+    <div><div class="num">{{ stats.matches }}</div><div class="lbl">Great matches waiting</div></div></a>
+  <a class="card stat" href="{{ url_for('jobs', tab='rated') }}" style="color:inherit;text-decoration:none"><div class="ico">{{ icon('sparkles', 22) }}</div>
+    <div><div class="num">{{ stats.new_week }}</div><div class="lbl">New good jobs this week</div></div></a>
+  <a class="card stat" href="{{ url_for('applications') }}" style="color:inherit;text-decoration:none"><div class="ico blue">{{ icon('send', 22) }}</div>
+    <div><div class="num">{{ stats.applied }}</div><div class="lbl">Applications sent</div></div></a>
+  <a class="card stat" href="{{ url_for('applications') }}" style="color:inherit;text-decoration:none"><div class="ico amber">{{ icon('calendar', 22) }}</div>
+    <div><div class="num">{{ stats.interviews }}</div><div class="lbl">Interviews & offers</div></div></a>
+</div>
+
+<div class="split">
+  <div class="card">
+    <div class="card-head"><h2>Best matches for you</h2><span class="spacer"></span>
+      {% if top %}<a class="btn sm ghost" href="{{ url_for('jobs') }}">See all {{ icon('arrow-right', 14) }}</a>{% endif %}</div>
+    {% for r in top %}
+      {% set a = loads(r['analysis'] or '{}') %}
+      <a class="mini-job" href="{{ url_for('job', job_id=r['id']) }}">
+        {{ ui.ring(r['score'], r['verdict'], 'sm') }}
+        <div style="flex:1;min-width:0"><div class="t">{{ r['title'] }}</div>
+          <div class="small muted">{{ r['company'] or '—' }} · {{ r['posted_at']|ago }}</div></div>
+        {{ ui.work_chip(r['work_type']) }}
+      </a>
+    {% else %}
+      <div class="empty" style="padding:24px"><div class="ico">{{ icon('search', 26) }}</div>
+        <h2>No rated jobs yet</h2><p>Click <b>Find jobs</b> - it searches job sites, skips what doesn't fit, and rates the rest.</p>
+        <button class="btn primary" data-open-find>{{ icon('search', 16) }} Find jobs</button></div>
+    {% endfor %}
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Needs your attention</h2></div>
+      {% for a in attention %}
+        <a class="mini-job" href="{{ url_for('application', app_id=a['id']) }}">
+          <span class="stat"><span class="ico amber" style="width:34px;height:34px">{{ icon('alert', 16) }}</span></span>
+          <div><div class="t">{{ a['company'] }}</div><div class="small muted">{{ a['next_action'] }}</div></div></a>
+      {% else %}
+        <p class="muted small" style="margin:0">Nothing right now. Replies from employers show up here.</p>
+      {% endfor %}
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Recent activity</h2></div>
+      <ul class="feed">
+        {% for e in activity %}
+          <li><span class="muted" style="width:78px;flex:none">{{ e['ts']|ago }}</span>
+            <span><b>{{ e['company'] }}</b> · {{ e['summary'] }}</span></li>
+        {% else %}
+          <li class="muted">When you apply to jobs, the history appears here.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+<p class="muted small" style="margin-top:16px">{{ stats.seen }} jobs checked so far · the free filter skipped the ones that don't fit before any AI cost.</p>
+{% endblock %}

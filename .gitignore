@@ -1,0 +1,7 @@
+.venv/
+profile.yaml
+jobs.db
+reports/
+__pycache__/
+.env
+data/

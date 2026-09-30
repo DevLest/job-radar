@@ -1,0 +1,118 @@
+# Copy this file to profile.yaml and edit it. Everything below is an EXAMPLE.
+# This file is sent to Claude as the (cached) system prompt, so keep it tight:
+# every line you add is paid for once per scoring run (then ~90% cheaper while cached).
+
+candidate:
+  title: "Full-stack Web Developer"
+  years_experience: 4
+  seniority: "mid"              # junior | mid | senior | lead
+  summary: >
+    PHP/Laravel developer who also ships Vue/React frontends. Comfortable owning
+    features end-to-end: REST APIs, MySQL schema design, queues, deployments.
+  languages_spoken: ["English", "Filipino"]
+  based_in: "Philippines"
+  timezone: "UTC+8"
+
+skills:
+  # primary = weight 3, secondary = weight 1 in the free keyword pre-filter.
+  # Use the words job posts actually use ("laravel", not "Laravel framework").
+  primary: ["php", "laravel", "mysql", "vue", "javascript", "rest api"]
+  secondary: ["react", "typescript", "node", "docker", "aws", "redis", "postgresql", "git", "tailwind"]
+  learning: ["go", "kubernetes"]   # counts as partial match, told to Claude only
+
+rate:
+  # Your minimum acceptable pay. Postings that clearly pay less are rejected for free (no tokens).
+  minimum: 2000
+  target: 3500                  # nice-to-have; Claude uses it to grade "rate fit"
+  currency: USD                 # USD | PHP | EUR | ...
+  per: month                    # hour | day | month | year
+  # Value of 1 unit of another currency in YOUR currency (approximate is fine; edit to today's rates).
+  # Lets a PHP 90,000/month posting be compared with a USD minimum.
+  fx_to_rate_currency: {PHP: 0.0175, EUR: 1.08, GBP: 1.27, AUD: 0.66, SGD: 0.75, CAD: 0.73}
+
+work_setup:
+  work_types: [remote]          # any of: remote, hybrid, onsite
+  # Where hybrid / on-site jobs are OK. Hybrid/on-site jobs elsewhere are dropped for free.
+  onsite_locations: ["makati", "taguig", "bgc", "pasig", "ortigas", "quezon city", "manila"]
+  employment_types: ["full-time", "contract"]   # full-time | part-time | contract | freelance
+  # For REMOTE jobs - location text that means "you can apply from where you are":
+  allowed_locations: ["worldwide", "anywhere", "global", "asia", "apac", "philippines",
+                      "southeast asia", "sea", "gmt+8", "utc+8", "remote"]
+  # Location text that clearly excludes you (checked first, case-insensitive substring):
+  reject_locations: ["us only", "usa only", "u.s. only", "united states only", "us-based",
+                     "must be located in the us", "eu only", "europe only", "uk only",
+                     "canada only", "latam only"]
+  # true  = drop jobs whose location is set but matches nothing in allowed_locations (saves tokens)
+  # false = send them to Claude to decide (more recall, more tokens)
+  strict_location: true
+  max_timezone_overlap_hours_needed: 4   # told to Claude, not enforced
+
+filters:
+  title_include: ["developer", "engineer", "programmer", "full stack", "fullstack",
+                  "backend", "back-end", "frontend", "front-end", "php", "laravel", "web"]
+  title_exclude: ["intern", "sales", "marketing", "recruiter", "manager", "director",
+                  "principal", "staff engineer", "ios", "android", "data scientist",
+                  "machine learning", "devops", "sre", "qa ", "support"]
+  min_keyword_score: 3          # primary hit = 3, secondary hit = 1
+  max_age_days: 30
+
+deal_breakers:                  # told to Claude; it sets verdict=skip if any apply
+  - "Requires on-site or hybrid work"
+  - "Requires US/EU work authorization or residency"
+  - "Unpaid trial work or commission-only pay"
+
+claude:
+  # Cost/accuracy knob. Approximate cost per scored job (short prompt, ~3k chars of description):
+  #   claude-haiku-4-5  ~ $0.003   good enough for yes/no triage
+  #   claude-sonnet-5-5 ~ $0.008   strong balance
+  #   claude-opus-5-5   ~ $0.015   most accurate (default)
+  # --batch halves all of these (results arrive within ~1h instead of instantly).
+  model: claude-opus-5-5
+  effort: low                   # low | medium | high (ignored for haiku)
+  max_description_chars: 3500   # job text beyond this is cut (marked [truncated])
+  max_jobs_per_run: 40          # hard cap on LLM calls per run = hard cap on spend
+
+# Company career boards to watch directly (public ATS APIs, free, very accurate).
+# Find the slug in the company's careers URL, e.g. boards.greenhouse.io/<slug>,
+# jobs.lever.co/<slug>, jobs.ashbyhq.com/<slug>.
+companies:
+  greenhouse: []                # e.g. ["gitlab", "remote"]
+  lever: []                     # e.g. ["spotify"]
+  ashby: []                     # e.g. ["ramp"]
+
+sources:                        # set false to skip a source
+  # Job sites for the Philippines - jobs you can apply to from the PH (local or international companies)
+  jobstreet: true               # JobStreet Philippines
+  onlinejobs: true              # OnlineJobs.ph (remote jobs hiring Filipinos)
+  linkedin: true                # LinkedIn public job search, remote jobs open to the Philippines (no login)
+  # International remote boards - jobs limited to other countries are skipped by the free filter
+  remotive: true
+  remoteok: true
+  jobicy: true
+  himalayas: true
+  weworkremotely: true
+  hackernews: true              # monthly "Who is hiring?" thread
+  arbeitnow: false              # mostly EU on-site; enable if relevant
+  search_terms: ["laravel", "php", "vue", "full stack"]   # used by sources that support search
+
+# Job-alert emails (LinkedIn, Indeed, JobStreet, OnlineJobs.ph) read from your mailbox.
+# Set up the mailbox in the web UI -> Settings, then create alerts on those sites.
+email_alerts:
+  enabled: true
+  lookback_days: 7
+  senders:                      # IMAP "FROM" matches per provider
+    linkedin: ["jobalerts-noreply@linkedin.com", "jobs-noreply@linkedin.com"]
+    indeed: ["indeed.com"]
+    jobstreet: ["jobstreet"]
+    onlinejobs: ["onlinejobs.ph"]
+
+applications:
+  tone: "professional, warm, concise"
+  sender_signature: ""          # your name, phone, LinkedIn URL - one per line (easiest to edit in the UI)
+
+# Runs while the web UI is open. "score" spends tokens (capped by claude.max_jobs_per_run).
+automation:
+  enabled: false
+  interval_hours: 6
+  tasks: [alerts, fetch, updates]   # add score to also rate new jobs automatically
+  score_mode: batch                 # batch (50% cheaper) | now

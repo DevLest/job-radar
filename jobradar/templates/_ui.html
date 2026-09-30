@@ -1,0 +1,65 @@
+{% macro ring(score, verdict, size='') -%}
+{% if score is not none %}<div class="ring {{ size }} v-{{ verdict }}" style="--p: {{ score }}" title="{{ W.verdict.get(verdict, '') }}"><b>{{ score }}</b></div>
+{%- else %}<div class="ring {{ size }} none" title="Not rated yet"><b>?</b></div>{% endif %}
+{%- endmacro %}
+
+{% macro work_chip(wt) -%}
+{% if wt == 'remote' %}<span class="chip info">{{ icon('globe', 13) }} Remote</span>
+{% elif wt == 'hybrid' %}<span class="chip accent">{{ icon('hybrid', 13) }} Hybrid</span>
+{% elif wt == 'onsite' %}<span class="chip">{{ icon('building', 13) }} On-site</span>{% endif %}
+{%- endmacro %}
+
+{% macro fit_chip(kind, value) -%}
+{% if value and value not in ('unclear',) %}
+<span class="chip {{ 'ok' if value in W.tone.ok else ('bad' if value in W.tone.bad else '') }}">{{ W[kind].get(value, value) }}</span>
+{% endif %}
+{%- endmacro %}
+
+{% macro pay_text(r, a) -%}
+{{ a.salary_stated or r['salary_text'] or ((r['salary_min']|money ~ '–' ~ r['salary_max']|money ~ ' ' ~ (r['currency'] or '') ~ ' / ' ~ r['salary_period']) if r['salary_max'] else '') }}
+{%- endmacro %}
+
+{% macro job_card(r, idx, show_reason=false) -%}
+{% set a = loads(r['analysis'] or '{}') %}
+{% set same = idx.fp.get(r['fingerprint']) %}
+{% set co = idx.co.get((r['company'] or '')|lower) %}
+{% set pay = pay_text(r, a)|trim %}
+<article class="job-card" data-href="{{ url_for('job', job_id=r['id']) }}"
+         data-search="{{ ((r['title'] or '') ~ ' ' ~ (r['company'] or '') ~ ' ' ~ (r['location'] or '') ~ ' ' ~ (a.matched_skills or [])|join(' '))|lower }}">
+  <div>{{ ring(r['score'], r['verdict']) }}
+    {% if r['score'] is not none %}<div class="verdict-word v-{{ r['verdict'] }}">{{ W.verdict.get(r['verdict'], '') }}</div>{% endif %}</div>
+  <div class="body">
+    <a class="title" href="{{ url_for('job', job_id=r['id']) }}">{{ r['title'] }}</a>
+    <div class="meta">
+      <span>{{ icon('briefcase', 13) }} {{ r['company'] or 'Company not listed' }}</span>
+      {% if r['location'] %}<span>{{ icon('pin', 13) }} {{ r['location'][:48] }}{{ '…' if r['location']|length > 48 }}</span>{% endif %}
+      <span>{{ icon('clock', 13) }} {{ r['posted_at']|ago or 'date unknown' }}</span>
+      <span class="muted">via {{ r['source'] }}</span>
+    </div>
+    <div class="chips">
+      {{ work_chip(r['work_type']) }}
+      {% if pay %}<span class="chip">{{ icon('wallet', 13) }} {{ pay[:40] }}</span>{% endif %}
+      {{ fit_chip('rate_fit', a.rate_fit) if a.rate_fit != 'not_stated' }}
+      {{ fit_chip('setup_fit', a.setup_fit) }}
+      {% for s in (a.matched_skills or [])[:4] %}<span class="chip ok">{{ icon('check', 12) }} {{ s }}</span>{% endfor %}
+      {% if same %}<span class="chip ok">Applied {{ same['applied_at']|ago }}</span>
+      {% elif co %}<span class="chip warn">{{ icon('alert', 12) }} You applied at this company</span>{% endif %}
+    </div>
+    {% if a.summary %}<p class="why">{{ a.summary }}</p>{% endif %}
+    {% if show_reason and r['reject_reason'] %}<p class="why muted">Skipped because: {{ r['reject_reason'] }}</p>{% endif %}
+  </div>
+  <div class="actions">
+    {% if r['status'] == 'ignored' %}
+      <button class="btn sm" data-act="undo-hide" data-id="{{ r['id'] }}">Show again</button>
+    {% else %}
+      {% if r['score'] is none and r['stage'] != 'batched' %}<button class="btn sm primary" data-act="rate" data-id="{{ r['id'] }}" title="One AI call (~$0.01)">{{ icon('sparkles', 14) }} Rate this job</button>{% endif %}
+      {% if r['url'] %}<a class="btn sm" href="{{ r['url'] }}" target="_blank" rel="noopener">{{ icon('external', 14) }} Open</a>{% endif %}
+      <button class="btn sm ghost" data-act="hide" data-id="{{ r['id'] }}" title="Not interested">{{ icon('eye-off', 14) }} Hide</button>
+    {% endif %}
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro empty(ic, title, text) -%}
+<div class="card empty"><div class="ico">{{ icon(ic, 28) }}</div><h2>{{ title }}</h2><p>{{ text }}</p>{{ caller() if caller }}</div>
+{%- endmacro %}

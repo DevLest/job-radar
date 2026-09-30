@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% import "_ui.html" as ui with context %}
+{% block title %}{{ j['title'] }} - Job Radar{% endblock %}
+{% block header %}<a class="small" href="{{ url_for('jobs') }}">{{ icon('arrow-left', 14) }} Back to jobs</a>{% endblock %}
+{% block content %}
+{% set pay = ui.pay_text(j, analysis)|trim %}
+
+<div class="card" style="margin-bottom:16px">
+  <div class="job-hero" style="flex-wrap:wrap">
+    <div style="text-align:center">{{ ui.ring(j['score'], j['verdict'], 'lg') }}
+      {% if j['score'] is not none %}<div class="verdict-word v-{{ j['verdict'] }}" style="font-size:13px">{{ W.verdict[j['verdict']] }}</div>{% endif %}</div>
+    <div style="flex:1;min-width:240px">
+      <h1>{{ j['title'] }}</h1>
+      <div class="muted" style="margin:4px 0 10px;display:flex;gap:6px 14px;flex-wrap:wrap">
+        <span>{{ icon('briefcase', 14) }} {{ j['company'] or 'Company not listed' }}</span>
+        {% if j['location'] %}<span>{{ icon('pin', 14) }} {{ j['location'][:90] }}</span>{% endif %}
+        <span>{{ icon('clock', 14) }} Posted {{ j['posted_at']|ago or '—' }}</span><span>via {{ j['source'] }}</span>
+      </div>
+      <div class="chips">{{ ui.work_chip(j['work_type']) }}{% if pay %}<span class="chip">{{ icon('wallet', 13) }} {{ pay }}</span>{% endif %}
+        {% if j['employment_type'] %}<span class="chip">{{ j['employment_type'] }}</span>{% endif %}</div>
+    </div>
+    <div class="row">
+      {% if j['url'] %}<a class="btn" href="{{ j['url'] }}" target="_blank" rel="noopener">{{ icon('external', 16) }} View original post</a>{% endif %}
+      <form method="post" action="{{ url_for('job_score', job_id=j['id']) }}">
+        <button class="btn {{ '' if j['score'] is not none else 'primary' }}" data-loading="Rating…">{{ icon('sparkles', 16) }} {{ 'Rate again' if j['score'] is not none else 'Rate this job' }}</button></form>
+      <form method="post" action="{{ url_for('job_ignore', job_id=j['id']) }}">
+        {% if j['status'] == 'ignored' %}<input type="hidden" name="undo" value="1"><button class="btn">Show again</button>
+        {% else %}<button class="btn ghost" title="Not interested">{{ icon('eye-off', 16) }} Hide</button>{% endif %}</form>
+    </div>
+  </div>
+</div>
+
+{% if prior %}
+<div class="callout">{{ icon('alert') }}<div>
+  {% if prior|selectattr('fingerprint', 'equalto', j['fingerprint'])|list %}<b>You already applied to this exact role.</b>
+  {% else %}<b>You already applied at {{ prior[0]['company'] }}</b> ({{ prior|length }} application{{ 's' if prior|length > 1 }}):{% endif %}
+  {% for p in prior[:3] %}<a href="{{ url_for('application', app_id=p['id']) }}">{{ p['title'] }}</a> ({{ W.status[p['status']] }}, {{ p['applied_at']|ago }}){{ ', ' if not loop.last }}{% endfor %}
+</div></div>
+{% endif %}
+
+<div class="split">
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>{{ icon('sparkles', 17) }} Why this score</h2></div>
+      {% if analysis.error %}
+        <p class="v-error">The AI couldn't rate this job ({{ analysis.error }}). Try <b>Rate again</b>.</p>
+      {% elif j['score'] is not none %}
+        <p style="font-size:15px">{{ analysis.summary }}</p>
+        {% set meters = [
+          ('Your skills', analysis.skills_match, analysis.skills_match ~ '% match'),
+          ('Pay', {'meets_target':100,'meets_minimum':70,'not_stated':50,'below_minimum':15}[analysis.rate_fit], W.rate_fit[analysis.rate_fit]),
+          ('Work setup', {'fits':100,'unclear':50,'conflicts':10}[analysis.setup_fit], W.setup_fit[analysis.setup_fit]),
+          ('Experience level', {'fits':100,'unclear':50,'over_qualified':60,'under_qualified':30}[analysis.seniority_fit], W.seniority_fit[analysis.seniority_fit]),
+        ] %}
+        {% for label, pct, word in meters %}
+        <div class="meter"><span class="fg2">{{ label }}</span>
+          <div class="bar"><div style="width:{{ pct }}%;background:{{ 'var(--green)' if pct >= 70 else ('var(--amber)' if pct >= 40 else 'var(--red)') }}"></div></div>
+          <span class="small">{{ word }}</span></div>
+        {% endfor %}
+        {% if analysis.matched_skills %}<h3 style="margin-top:16px">You have</h3><div class="chips">{% for s in analysis.matched_skills %}<span class="chip ok">{{ icon('check', 12) }} {{ s }}</span>{% endfor %}</div>{% endif %}
+        {% if analysis.missing_skills %}<h3 style="margin-top:14px">They also want</h3><div class="chips">{% for s in analysis.missing_skills %}<span class="chip">{{ s }}</span>{% endfor %}</div>{% endif %}
+        {% if analysis.red_flags %}<h3 style="margin-top:14px">Watch out for</h3><div class="chips">{% for s in analysis.red_flags %}<span class="chip bad">{{ icon('alert', 12) }} {{ s }}</span>{% endfor %}</div>{% endif %}
+      {% else %}
+        <p class="muted">Not rated yet{% if j['reject_reason'] %}. It was skipped by your filters: <b>{{ j['reject_reason'] }}</b>{% endif %}.</p>
+        <p class="muted small">Click <b>Rate this job</b> to see how well it fits you (one AI call).</p>
+      {% endif %}
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Job description</h2><span class="spacer"></span>
+        {% if (j['description'] or '')|length > 600 %}<button class="btn sm ghost" data-expand="#desc">Show full description</button>{% endif %}</div>
+      <div class="desc-box {{ 'collapsed' if (j['description'] or '')|length > 600 }}" id="desc">{{ j['description'] or 'No description available - open the original post.' }}</div>
+    </div>
+  </div>
+
+  <div class="card sticky" id="apply">
+    {% if not a or a['status'] == 'drafted' %}
+      <div class="card-head"><h2>{{ icon('send', 17) }} Apply</h2></div>
+      {% set has_draft = a and a['body'] %}
+      <div class="steps">
+        <div class="step {{ 'done' if has_draft else 'active' }}"><span class="num">{{ icon('check', 15) if has_draft else '1' }}</span>
+          <div><h3>Write your application</h3>
+            {% if not configured.cv %}<p class="small muted">Upload your CV on <a href="{{ url_for('cv_page') }}">My CV</a> and the AI will write a tailored message for you.</p>{% endif %}
+            <form method="post" action="{{ url_for('job_draft', job_id=j['id']) }}">
+              <button class="btn {{ 'sm' if has_draft else 'primary' }}" {{ 'disabled' if not configured.cv or not configured.api }} data-loading="Writing your draft…">{{ icon('sparkles', 15) }} {{ 'Write a new version' if has_draft else 'Write it for me' }}</button>
+            </form>
+            {% if not has_draft %}<p class="small muted" style="margin-top:6px">Based on your CV and this job. Or just write your own below.</p>{% endif %}
+          </div></div>
+
+        {% set target = url_for('application_send', app_id=a['id']) if a else url_for('job_applied', job_id=j['id']) %}
+        <form method="post" action="{{ target }}">
+        <div class="step {{ 'active' if has_draft }}"><span class="num">2</span>
+          <div><h3>Read it and make it yours</h3>
+            <label class="field"><span class="label">Subject</span><input type="text" name="subject" value="{{ a['subject'] if a and a['subject'] else '' }}" placeholder="Application for {{ j['title'] }}"></label>
+            <label class="field"><span class="label">Message</span><textarea name="body" rows="12" placeholder="Your cover letter / email">{{ a['body'] if a and a['body'] else '' }}</textarea></label>
+            {% if a %}<button class="btn sm" formaction="{{ url_for('application_save', app_id=a['id']) }}">Save draft</button>{% endif %}
+          </div></div>
+
+        <div class="step"><span class="num">3</span>
+          <div><h3>Send it</h3>
+            <div class="apply-choices">
+              <div class="card" style="padding:14px">
+                <b>{{ icon('mail', 15) }} By email</b>
+                <input type="email" name="to_email" style="margin:8px 0" value="{{ a['to_email'] if a and a['to_email'] else '' }}" placeholder="hr@company.com" list="found-emails">
+                <datalist id="found-emails">{% for e in emails %}<option value="{{ e }}">{% endfor %}</datalist>
+                <div class="small muted" style="margin-bottom:8px">{% if emails %}Found in the post: {{ emails|join(', ') }}{% else %}No email in this post{% endif %}</div>
+                <label class="small" style="display:flex;gap:6px;align-items:center;margin-bottom:8px"><input type="checkbox" name="attach_cv" value="1" checked> Attach my CV</label>
+                {% if prior %}<label class="small" style="display:flex;gap:6px;align-items:center;margin-bottom:8px"><input type="checkbox" name="confirm_duplicate" value="1"> Send anyway - I know I applied there</label>{% endif %}
+                <button class="btn primary block" {{ 'disabled' if not a or not configured.smtp }} data-confirm="Send this application now?" data-loading="Sending…">{{ icon('send', 15) }} Send email</button>
+                {% if not configured.smtp %}<div class="small muted" style="margin-top:6px">Connect email in <a href="{{ url_for('settings_page') }}">Settings</a> to send from here.</div>
+                {% elif not a %}<div class="small muted" style="margin-top:6px">Write or save a draft first.</div>{% endif %}
+              </div>
+              <div class="card" style="padding:14px">
+                <b>{{ icon('external', 15) }} On their website</b>
+                <p class="small muted" style="margin:8px 0">For LinkedIn Easy Apply, JobStreet, company career pages… Apply there, then tell us so we can track it.</p>
+                {% if j['url'] %}<a class="btn block" style="margin-bottom:8px" href="{{ j['url'] }}" target="_blank" rel="noopener">Open application page</a>{% endif %}
+                <button class="btn block" formaction="{{ url_for('job_applied', job_id=j['id']) }}">{{ icon('check', 15) }} I've applied</button>
+              </div>
+            </div>
+          </div></div>
+        </form>
+      </div>
+    {% else %}
+      <div class="card-head"><h2>{{ icon('check', 17) }} You applied</h2><span class="spacer"></span><span class="chip ok">{{ W.status[a['status']] }}</span></div>
+      <p class="muted">{{ a['applied_at']|ago|capitalize }} via {{ a['method'] }}. We check your inbox for replies and update the status for you.</p>
+      {% if a['next_action'] %}<div class="callout">{{ icon('alert') }}<div><b>Next:</b> {{ a['next_action'] }}</div></div>{% endif %}
+      <ul class="timeline" style="margin:12px 0">
+        {% for e in events[:5] %}<li><span class="tl-ico {{ e['kind'] }}">{{ icon({'email_in':'mail','sent':'send','note':'pen','posting_closed':'x','draft':'sparkles'}.get(e['kind'], 'check'), 14) }}</span>
+          <div><div class="small muted">{{ e['ts']|ago }}</div>{{ e['summary'] }}</div></li>{% endfor %}
+      </ul>
+      <a class="btn primary block" href="{{ url_for('application', app_id=a['id']) }}">Open application {{ icon('arrow-right', 15) }}</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
