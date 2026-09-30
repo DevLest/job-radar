@@ -1,0 +1,59 @@
+---
+description: Python/Flask conventions for services, entities, repositories, routes and sources
+globs: jobradar/**/*.py,run.py,tests/**/*.py
+alwaysApply: false
+---
+
+# Python Backend Conventions
+
+- `from __future__ import annotations`, type hints on public functions, double quotes, 4-space indent, ~120 char lines.
+- `@dataclass` for entities and view models; `typing.Protocol` for abstractions; constants/Enums instead of magic strings.
+- Meaningful names. No single-letter names except loop indices and comprehensions.
+- Docstrings only when the *why* isn't obvious. No comments that restate code.
+- Services raise domain errors (`ScoringError`, `MailError`, `LLMError`). Routes turn them into friendly messages with a next step.
+- Parameterised SQL (`?`) only. Never f-string user input into SQL.
+- Tests: pytest `tests/.../test_*.py`. Use fakes via DIP. Never hit the real Anthropic API, IMAP, SMTP or live HTTP. Use fixture payloads for source parsers.
+
+```python
+# ❌ route doing everything
+@app.post("/jobs/<path:job_id>/score")
+def job_score(job_id):
+    msg = llm.create(scorer.request_params(db().job(job_id), ...))
+    scorer._save(db(), job_id, scorer.parse(msg))
+
+# ✅ thin route, service owns the use case
+@jobs_bp.post("/<path:job_id>/score")
+def score(job_id: str):
+    result = container.scoring_service().score_one(job_id)
+    return reply(True, result.message, **asdict(result))
+```
+
+```python
+# ✅ entity owns the rule
+@dataclass
+class Application:
+    status: str
+
+    def advance_to(self, new_status: str) -> bool:
+        if STATUS_ORDER.index(new_status) <= STATUS_ORDER.index(self.status):
+            return False
+        self.status = new_status
+        return True
+```
+
+```python
+# ✅ Open/Closed job sources
+class JobSource(Protocol):
+    name: str
+
+    def fetch(self, profile: dict) -> list[Job]: ...
+
+
+class RemotiveSource:
+    name = "remotive"
+
+    def __init__(self, http: HttpClient):
+        self.http = http
+
+    def fetch(self, profile: dict) -> list[Job]: ...
+```

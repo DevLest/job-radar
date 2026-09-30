@@ -1,0 +1,74 @@
+---
+description: Job Radar core architecture - DDD by feature, Clean Architecture layers, SOLID/SRP, product invariants
+alwaysApply: true
+---
+
+# Job Radar - Core Architecture
+
+Canonical source: `CLAUDE.md` at the repo root. Keep this file in sync with it.
+
+Stack: Python 3.12 + Flask 3 + Jinja + vanilla JS/CSS (no build step) + SQLite + Anthropic SDK.
+
+## Target structure
+
+```text
+jobradar/
+  app.py  container.py          app factory; composition root (wires dependencies)
+  domain/<feature>/             jobs, prefilter, scoring, applications, alerts, cv, preferences, usage
+    <feature>.py                entity (dataclass + behaviour)
+    <feature>_repository.py     SQL for its own table(s)
+    <feature>_queries.py        reusable SQL fragments
+    <feature>_service.py        use cases
+    <feature>_mapper.py         entity -> view model / JSON
+    <feature>_view.py           view-model dataclasses (DTOs)
+    <feature>_routes.py         Flask Blueprint (thin)
+  sources/                      one *_source.py per feed + source_registry.py (JobSource Protocol)
+  pipeline/                     orchestration only (task runner, scheduler)
+  lib/                          database.py, llm_client.py, mail_client.py, http_client.py
+  shared/utils  shared/constants
+  templates/components/{atoms,molecules,organisms}  templates/layouts  templates/pages
+  static/css  static/js/{lib,components,pages}
+tests/                          pytest, mirrors jobradar/
+```
+
+- Group by feature, not technical type. Name files `<feature>_<role>.py`.
+- Keep files under ~200 lines. Split by responsibility.
+
+## Layers (dependencies point inward only)
+
+Route/CLI -> Service -> Repository -> lib/database. Services use Entities for rules, Mappers for output, and lib clients for I/O.
+
+- Routes: parse the request, call one service method, render or `reply()`. No SQL, rules, LLM calls or `json.loads`.
+- Services: no `flask` imports. Dependencies are injected via `__init__`.
+- Entities: state and rules, no I/O.
+- Repositories: parameterised SQL only (`?`), no business rules.
+- `lib/` and `shared/` never import from `domain/`.
+
+## SOLID
+
+- SRP: one reason to change per module/class.
+- OCP: a new feed or status means adding a file or constant, not an `elif` chain.
+- LSP: every `JobSource` returns `list[Job]` and raises the same error type.
+- ISP: small Protocols (`JobSource`, `MailSender`, `LlmClient`).
+- DIP: inject dependencies. `container.py` wires them, and tests pass fakes.
+
+## Migration policy
+
+The code today is flat (`web.py`, `scorer.py`, `sources.py`, `db.py`). Don't big-bang refactor.
+New code goes in the target structure. Code you touch moves to its target home in the same change.
+Refactor-only commits must not change behaviour.
+
+## Product invariants (never break)
+
+1. A job is scored at most once. Duplicates never reach the LLM.
+2. The prefilter makes no LLM or network calls.
+3. Every Claude call goes through `lib/llm_client` and logs usage with a `purpose`.
+4. Each email goes to Claude at most once (`emails_seen`).
+5. Automatic status changes only move forward.
+6. Nothing is sent or submitted without a user click. No auto-apply.
+7. Secrets stay in `.env`: never logged, sent to Claude or committed.
+8. The server binds to 127.0.0.1. Keep the same-origin POST check.
+9. Schema changes are additive only.
+
+Reuse before creating new: search `shared/`, `components/` and `static/js/lib` first.
+If a request conflicts with these rules, ask before writing code.

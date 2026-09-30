@@ -1,0 +1,13 @@
+---
+description: Branch naming, commit style and what must never be committed - use when creating branches, commits or PRs
+alwaysApply: false
+---
+
+# Git Workflow
+
+- Branches: `feat/`, `fix/`, `chore/`, `refactor/` + a short kebab-case slug (`feat/jobstreet-source`).
+- Conventional commits (`feat(scoring): cache profile prompt`).
+- Atomic commits: one logical change each, with refactors separate from behaviour changes.
+- Never commit `.env`, `profile.yaml`, `jobs.db`, `data/`, `.venv/`.
+- Never rename a branch that has an open PR, because GitHub closes the PR.
+- When changing a rule here or in any `.cursor/rules/*.mdc`, update `CLAUDE.md` in the same commit (and vice versa).
