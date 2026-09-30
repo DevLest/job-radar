@@ -1,0 +1,22 @@
+{# First-run hero + checklist. `page` is a HomePage. #}
+{% macro setup_checklist(page) -%}
+{% set total = page.setup|length %}
+<div class="hero">
+  <div><h1>{% if page.setup_done == 0 %}Welcome! Let's find you a great job.{% else %}You're {{ page.setup_done }} of {{ total }} steps in - nice!{% endif %}</h1>
+    <p>Job Radar searches job sites and your alert emails, skips what doesn't fit, and uses AI to rate what's left against your skills, pay and work style.</p></div>
+  <button class="btn lg" data-open-find>{{ icon('search', 17) }} Find jobs now</button>
+</div>
+<div class="card" style="margin-bottom:20px">
+  <div class="card-head"><h2>Get set up</h2><span class="spacer"></span><span class="muted small">{{ page.setup_done }} / {{ total }} done</span></div>
+  <div class="progressbar" style="margin-bottom:8px"><div style="width: {{ page.setup_percent }}%"></div></div>
+  <ul class="checklist">
+    {% for step in page.setup %}
+    <li class="{{ 'done' if step.done }}">
+      <span class="dot">{{ icon('check', 16) if step.done else icon(step.icon, 16) }}</span>
+      <div style="flex:1"><div class="t">{{ step.title }}</div><div class="small muted">{{ step.text }}</div></div>
+      {% if not step.done %}<a class="btn sm {{ 'primary' if loop.index0 == page.next_step }}" href="{{ url_for(step.endpoint) if step.endpoint else '#find' }}">{{ step.cta }} {{ icon('arrow-right', 14) }}</a>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{%- endmacro %}

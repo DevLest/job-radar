@@ -1,0 +1,65 @@
+{% from "components/atoms/chip.html" import chip %}
+{% from "components/molecules/timeline_item.html" import timeline_item %}
+
+{# The 3-step apply panel (draft -> edit -> send / mark applied), or the "You applied" summary.
+   `page` is a JobDetailPage. Nothing is sent without the user clicking Send. #}
+{% macro apply_panel(page) -%}
+{% set job, app = page.job, page.application %}
+<div class="card sticky" id="apply">
+  {% if not app or app.is_draft %}
+    <div class="card-head"><h2>{{ icon('send', 17) }} Apply</h2></div>
+    {% set has_draft = app and app.body %}
+    <div class="steps">
+      <div class="step {{ 'done' if has_draft else 'active' }}"><span class="num">{{ icon('check', 15) if has_draft else '1' }}</span>
+        <div><h3>Write your application</h3>
+          {% if not configured.cv %}<p class="small muted">Upload your CV on <a href="{{ url_for('cv.page') }}">My CV</a> and the AI will write a tailored message for you.</p>{% endif %}
+          <form method="post" action="{{ url_for('jobs.draft', job_id=job.id) }}">
+            <button class="btn {{ 'sm' if has_draft else 'primary' }}" {{ 'disabled' if not configured.cv or not configured.api }} data-loading="Writing your draft…">{{ icon('sparkles', 15) }} {{ 'Write a new version' if has_draft else 'Write it for me' }}</button>
+          </form>
+          {% if not has_draft %}<p class="small muted" style="margin-top:6px">Based on your CV and this job. Or just write your own below.</p>{% endif %}
+        </div></div>
+
+      {% set target = url_for('applications.send', app_id=app.id) if app else url_for('jobs.applied', job_id=job.id) %}
+      <form method="post" action="{{ target }}">
+      <div class="step {{ 'active' if has_draft }}"><span class="num">2</span>
+        <div><h3>Read it and make it yours</h3>
+          <label class="field"><span class="label">Subject</span><input type="text" name="subject" value="{{ app.subject if app and app.subject else '' }}" placeholder="Application for {{ job.title }}"></label>
+          <label class="field"><span class="label">Message</span><textarea name="body" rows="12" placeholder="Your cover letter / email">{{ app.body if app and app.body else '' }}</textarea></label>
+          {% if app %}<button class="btn sm" formaction="{{ url_for('applications.save', app_id=app.id) }}">Save draft</button>{% endif %}
+        </div></div>
+
+      <div class="step"><span class="num">3</span>
+        <div><h3>Send it</h3>
+          <div class="apply-choices">
+            <div class="card" style="padding:14px">
+              <b>{{ icon('mail', 15) }} By email</b>
+              <input type="email" name="to_email" style="margin:8px 0" value="{{ app.to_email if app and app.to_email else '' }}" placeholder="hr@company.com" list="found-emails">
+              <datalist id="found-emails">{% for e in job.emails %}<option value="{{ e }}">{% endfor %}</datalist>
+              <div class="small muted" style="margin-bottom:8px">{% if job.emails %}Found in the post: {{ job.emails|join(', ') }}{% else %}No email in this post{% endif %}</div>
+              <label class="small" style="display:flex;gap:6px;align-items:center;margin-bottom:8px"><input type="checkbox" name="attach_cv" value="1" checked> Attach my CV</label>
+              {% if page.prior %}<label class="small" style="display:flex;gap:6px;align-items:center;margin-bottom:8px"><input type="checkbox" name="confirm_duplicate" value="1"> Send anyway - I know I applied there</label>{% endif %}
+              <button class="btn primary block" {{ 'disabled' if not app or not configured.smtp }} data-confirm="Send this application now?" data-loading="Sending…">{{ icon('send', 15) }} Send email</button>
+              {% if not configured.smtp %}<div class="small muted" style="margin-top:6px">Connect email in <a href="{{ url_for('settings.page') }}">Settings</a> to send from here.</div>
+              {% elif not app %}<div class="small muted" style="margin-top:6px">Write or save a draft first.</div>{% endif %}
+            </div>
+            <div class="card" style="padding:14px">
+              <b>{{ icon('external', 15) }} On their website</b>
+              <p class="small muted" style="margin:8px 0">For LinkedIn Easy Apply, JobStreet, company career pages… Apply there, then tell us so we can track it.</p>
+              {% if job.url %}<a class="btn block" style="margin-bottom:8px" href="{{ job.url }}" target="_blank" rel="noopener">Open application page</a>{% endif %}
+              <button class="btn block" formaction="{{ url_for('jobs.applied', job_id=job.id) }}">{{ icon('check', 15) }} I've applied</button>
+            </div>
+          </div>
+        </div></div>
+      </form>
+    </div>
+  {% else %}
+    <div class="card-head"><h2>{{ icon('check', 17) }} You applied</h2><span class="spacer"></span>{{ chip(app.status_label, 'ok') }}</div>
+    <p class="muted">{{ app.applied_at|ago|capitalize }} via {{ app.method }}. We check your inbox for replies and update the status for you.</p>
+    {% if app.next_action %}<div class="callout">{{ icon('alert') }}<div><b>Next:</b> {{ app.next_action }}</div></div>{% endif %}
+    <ul class="timeline" style="margin:12px 0">
+      {% for event in page.events %}{{ timeline_item(event) }}{% endfor %}
+    </ul>
+    <a class="btn primary block" href="{{ url_for('applications.detail', app_id=app.id) }}">Open application {{ icon('arrow-right', 15) }}</a>
+  {% endif %}
+</div>
+{%- endmacro %}

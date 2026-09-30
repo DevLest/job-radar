@@ -1,0 +1,14 @@
+/* Reset, typography and utility classes. */
+/* ---------- base ---------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--fg); font: 14.5px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 24px; line-height: 1.25; margin: 0; letter-spacing: -.01em; }
+h2 { font-size: 16px; margin: 0 0 4px; }
+h3 { font-size: 14px; margin: 0 0 6px; }
+p { margin: 0 0 10px; }
+.ic { flex: none; vertical-align: -3px; }
+.muted { color: var(--mute); } .small { font-size: 12.5px; } .fg2 { color: var(--fg-2); }
+.hidden { display: none !important; }

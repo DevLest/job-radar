@@ -1,0 +1,37 @@
+{% from "components/atoms/chip.html" import badge, chip %}
+{% from "components/atoms/ring.html" import ring %}
+
+{# One application on the board. Drag & drop / move select: static/js/components/board.js. #}
+{% macro app_card(card, column, status_options) -%}
+<a class="app-card" href="{{ url_for('applications.detail', app_id=card.id) }}" data-id="{{ card.id }}" {{ 'draggable=true' if not column.is_drafts }}>
+  <div class="row" style="justify-content:space-between;flex-wrap:nowrap">
+    <span class="co">{{ card.company or '—' }}</span>
+    {% if card.score is not none %}{{ ring(card.score, card.verdict, card.verdict_word, 'sm') }}{% endif %}
+  </div>
+  <div class="ti">{{ card.title }}</div>
+  <div class="foot">{{ icon('clock', 12) }} {{ ('Applied ' ~ card.applied_at|ago) if card.applied_at else ('Started ' ~ card.created_at|ago) }}
+    {% if card.status == 'assessment' %}{{ chip('Assessment', 'warn', style='margin-left:auto') }}{% elif card.status == 'withdrawn' %}{{ chip('Withdrawn', style='margin-left:auto') }}{% endif %}</div>
+  {% if card.last_event and not column.is_drafts %}<div class="small muted" style="margin-top:6px">{{ card.last_event }}</div>{% endif %}
+  {% if card.next_action %}<div class="next">{{ icon('alert', 13) }} {{ card.next_action }}</div>{% endif %}
+  {% if not column.is_drafts %}
+  <select data-id="{{ card.id }}" aria-label="Move to">
+    {% for option in status_options %}<option value="{{ option.value }}" {{ 'selected' if option.value == card.status }}>{{ option.label }}</option>{% endfor %}
+  </select>
+  {% endif %}
+</a>
+{%- endmacro %}
+
+{# `board` is a BoardPage. #}
+{% macro board(board) -%}
+<div class="board">
+  {% for column in board.columns %}
+  <section class="col" data-status="{{ column.key }}">
+    <div class="col-head">{{ icon(column.icon, 15) }} {{ column.title }}{{ badge(column.cards|length, soft=true) }}</div>
+    <div class="cards">
+      {% for card in column.cards %}{{ app_card(card, column, board.status_options) }}{% endfor %}
+      <div class="empty-col {{ 'hidden' if column.cards }}">{{ 'Drafts you haven\'t sent yet' if column.is_drafts else 'Drop a card here' }}</div>
+    </div>
+  </section>
+  {% endfor %}
+</div>
+{%- endmacro %}

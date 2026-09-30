@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+{% from "components/molecules/empty_state.html" import empty_state %}
+{% from "components/organisms/job_card.html" import job_card %}
+{% from "components/organisms/job_toolbar.html" import job_toolbar %}
+{% block title %}Jobs - Job Radar{% endblock %}
+{% block header %}<h1>Jobs</h1><div class="sub">Rated against your skills, pay and work style. Click a job to see why and apply.</div>{% endblock %}
+{% block header_actions %}
+<div class="menu">
+  <button class="btn" data-menu>{{ icon('more', 16) }} More</button>
+  <div class="menu-list">
+    <button data-open-dialog="#add-dialog">{{ icon('plus', 16) }} Add a job I found</button>
+    <button data-task="refilter">{{ icon('refresh', 16) }} Update list with my preferences</button>
+    {% if nav.queued and configured.api %}<button data-task="score">{{ icon('sparkles', 16) }} Rate {{ nav.rate_now }} waiting jobs (~${{ '%.2f' % nav.est_queued }})</button>{% endif %}
+    {% if nav.pending_batches %}<button data-task="collect">{{ icon('inbox', 16) }} Collect half-price ratings</button>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{{ job_toolbar(page) }}
+
+{% if page.tab == 'waiting' and page.cards and configured.api %}
+<div class="callout info">{{ icon('sparkles') }}<div style="flex:1">These passed the free filter and are waiting for an AI rating.
+  Rate them all at once, or one by one with <b>Rate this job</b>.</div>
+  <button class="btn sm primary" data-task="score">Rate {{ nav.rate_now }} jobs · ~${{ '%.2f' % nav.est_queued }}</button></div>
+{% elif page.tab == 'filtered' and page.cards %}
+<div class="callout info">{{ icon('filter') }}<div>These didn't match your preferences, so no AI money was spent on them. Change your
+  <a href="{{ url_for('preferences.page') }}">preferences</a> and use <b>More → Update list</b> to re-check.</div></div>
+{% endif %}
+
+<div class="jobs-list">
+  {% for card in page.cards %}{{ job_card(card, show_reason=(page.tab == 'filtered')) }}{% endfor %}
+</div>
+<div id="no-results" class="hidden">{% call empty_state('search', 'No jobs match that search', 'Try a different word, or clear the search box.') %}{% endcall %}</div>
+
+{% if not page.cards %}
+  {% if page.tab == 'best' %}
+    {% call empty_state('star', 'No top matches yet', 'Find jobs to get started. Jobs scoring 75+ appear here. Check "Worth a look" and "Not rated yet" too.') %}
+      <button class="btn primary" data-open-find>{{ icon('search', 16) }} Find jobs</button>
+    {% endcall %}
+  {% elif page.tab == 'waiting' %}
+    {% call empty_state('check', 'Nothing waiting', 'Every job that fits your preferences has been rated.') %}{% endcall %}
+  {% elif page.tab == 'hidden' %}
+    {% call empty_state('eye-off', 'No hidden jobs', 'Jobs you hide go here, in case you change your mind.') %}{% endcall %}
+  {% else %}
+    {% call empty_state('briefcase', 'No jobs here yet', 'Click Find jobs to search job sites and your alert emails.') %}
+      <button class="btn primary" data-open-find>{{ icon('search', 16) }} Find jobs</button>
+    {% endcall %}
+  {% endif %}
+{% endif %}
+{% if page.truncated %}<p class="muted small">Showing the first 200 - search or filter to narrow down.</p>{% endif %}
+
+{% include "components/organisms/add_job_dialog.html" %}
+{% endblock %}

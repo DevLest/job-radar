@@ -1,0 +1,27 @@
+{% from "components/molecules/pref_field.html" import pref_field %}
+
+{# The "I want at least ___ per ___" sentence for the pay fields. #}
+{% macro pay_sentence(section, values) -%}
+<div class="pay-sentence" style="margin-bottom:12px">I want at least
+  <input type="number" step="any" name="rate.minimum" value="{{ values['rate.minimum'] }}" aria-label="Minimum pay">
+  <select name="rate.currency" aria-label="Currency">{% for o in section.fields[2].options %}<option {{ 'selected' if o == values['rate.currency'] }}>{{ o }}</option>{% endfor %}</select>
+  per <select name="rate.per" aria-label="Per">{% for o in section.fields[3].options %}<option {{ 'selected' if o == values['rate.per'] }}>{{ o }}</option>{% endfor %}</select></div>
+<div class="pay-sentence">and ideally around
+  <input type="number" step="any" name="rate.target" value="{{ values['rate.target'] }}" aria-label="Target pay"> <span class="muted">(same currency)</span></div>
+{%- endmacro %}
+
+{# A card of related preferences; collapsed ones open on click. `section` is a PrefSection. #}
+{% macro pref_section(section, values) -%}
+<section class="card pref-section">
+  {% if section.collapsed %}<details><summary style="cursor:pointer"><h2 style="display:inline">{{ section.title }}</h2> <span class="muted small">{{ section.collapsed_note }}</span></summary><div style="margin-top:12px">{% else %}<h2>{{ section.title }}</h2>{% endif %}
+  {% if section.desc %}<p class="desc">{{ section.desc }}</p>{% endif %}
+  {% if section.layout == 'pay' %}
+    {{ pay_sentence(section, values) }}
+  {% else %}
+    <div class="{{ 'grid g2' if section.grid }}" style="gap:0 16px">
+    {% for field in section.fields %}{{ pref_field(field) }}{% endfor %}
+    </div>
+  {% endif %}
+  {% if section.collapsed %}</div></details>{% endif %}
+</section>
+{%- endmacro %}

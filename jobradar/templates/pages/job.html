@@ -1,0 +1,18 @@
+{% extends "layouts/base.html" %}
+{% from "components/organisms/apply_panel.html" import apply_panel with context %}
+{% from "components/organisms/job_hero.html" import job_hero, prior_warning %}
+{% from "components/organisms/score_breakdown.html" import job_description, score_breakdown %}
+{% block title %}{{ page.job.title }} - Job Radar{% endblock %}
+{% block header %}<a class="small" href="{{ url_for('jobs.list') }}">{{ icon('arrow-left', 14) }} Back to jobs</a>{% endblock %}
+{% block content %}
+{{ job_hero(page.job) }}
+{{ prior_warning(page.prior, page.prior_same_role) }}
+
+<div class="split">
+  <div class="stack">
+    {{ score_breakdown(page.job) }}
+    {{ job_description(page.job) }}
+  </div>
+  {{ apply_panel(page) }}
+</div>
+{% endblock %}

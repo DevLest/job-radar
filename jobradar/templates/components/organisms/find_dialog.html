@@ -1,0 +1,35 @@
+{# "Find jobs" dialog; behaviour in static/js/components/find-dialog.js. #}
+<dialog id="find-dialog">
+  <div class="m-head"><div class="stat"><div class="ico">{{ icon('search', 22) }}</div></div>
+    <div style="flex:1"><h2 style="font-size:19px">Find jobs</h2><p class="muted" style="margin:0">Choose what to check. You'll see progress as it goes.</p></div>
+    <button class="btn ghost icon-btn" data-close aria-label="Close">{{ icon('x') }}</button></div>
+  <div class="m-body">
+    <label class="opt-row {{ 'disabled' if not configured.imap }}">
+      <span class="oi">{{ icon('mail') }}</span>
+      <span class="ot"><b>Job-alert emails</b><span class="small muted">{% if configured.imap %}LinkedIn, Indeed, JobStreet, OnlineJobs.ph alerts in your inbox{% else %}Connect your email in Settings first{% endif %}</span></span>
+      <span class="switch"><input type="checkbox" id="find-alerts" {{ 'checked' if configured.imap else 'disabled' }}><span class="track"></span></span>
+    </label>
+    <label class="opt-row">
+      <span class="oi">{{ icon('globe') }}</span>
+      <span class="ot"><b>Job websites</b><span class="small muted">Remote job boards + companies you follow · free</span></span>
+      <span class="switch"><input type="checkbox" id="find-feeds" checked><span class="track"></span></span>
+    </label>
+    <div class="opt-row {{ 'disabled' if not configured.api }}">
+      <span class="oi">{{ icon('sparkles') }}</span>
+      <span class="ot"><label for="find-score" style="cursor:pointer"><b>Rate new jobs with AI</b>
+        <span class="small muted">{% if configured.api %}Up to {{ nav.cap }} jobs · max ~${{ '%.2f' % nav.est_max }}{% else %}Add your AI key in Settings first{% endif %}</span></label>
+        <span class="pills" style="margin-top:8px">
+          <label class="pill-opt"><input type="radio" name="score-mode" value="now" checked><span>Right away</span></label>
+          <label class="pill-opt"><input type="radio" name="score-mode" value="batch"><span>Half price (≈1 hour)</span></label>
+        </span></span>
+      <label class="switch"><input type="checkbox" id="find-score" {{ 'checked' if configured.api else 'disabled' }}><span class="track"></span></label>
+    </div>
+    <label class="opt-row {{ 'disabled' if not configured.imap }}">
+      <span class="oi">{{ icon('inbox') }}</span>
+      <span class="ot"><b>Check for employer replies</b><span class="small muted">Updates your applications from your inbox</span></span>
+      <span class="switch"><input type="checkbox" id="find-updates" {{ 'checked' if configured.imap and nav.active_apps else '' }} {{ 'disabled' if not configured.imap }}><span class="track"></span></span>
+    </label>
+  </div>
+  <div class="m-foot"><button class="btn ghost" data-close>Cancel</button>
+    <button class="btn primary lg" id="find-start">{{ icon('zap', 16) }} Start</button></div>
+</dialog>

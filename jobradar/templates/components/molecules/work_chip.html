@@ -1,0 +1,7 @@
+{% from "components/atoms/chip.html" import chip %}
+
+{% macro work_chip(work_type) -%}
+{% if work_type == 'remote' %}{{ chip('Remote', 'info', 'globe') }}
+{% elif work_type == 'hybrid' %}{{ chip('Hybrid', 'accent', 'hybrid') }}
+{% elif work_type == 'onsite' %}{{ chip('On-site', '', 'building') }}{% endif %}
+{%- endmacro %}

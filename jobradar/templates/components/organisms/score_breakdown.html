@@ -1,0 +1,32 @@
+{% from "components/atoms/chip.html" import chip %}
+
+{# "Why this score": summary, fit meters and skill lists. `job` is a JobDetailView. #}
+{% macro score_breakdown(job) -%}
+<div class="card">
+  <div class="card-head"><h2>{{ icon('sparkles', 17) }} Why this score</h2></div>
+  {% if job.error %}
+    <p class="v-error">The AI couldn't rate this job ({{ job.error }}). Try <b>Rate again</b>.</p>
+  {% elif job.is_rated %}
+    <p style="font-size:15px">{{ job.summary }}</p>
+    {% for meter in job.meters %}
+    <div class="meter"><span class="fg2">{{ meter.label }}</span>
+      <div class="bar"><div style="width:{{ meter.percent }}%;background:var(--{{ meter.tone }})"></div></div>
+      <span class="small">{{ meter.word }}</span></div>
+    {% endfor %}
+    {% if job.matched_skills %}<h3 style="margin-top:16px">You have</h3><div class="chips">{% for s in job.matched_skills %}{{ chip(s, 'ok', 'check', 12) }}{% endfor %}</div>{% endif %}
+    {% if job.missing_skills %}<h3 style="margin-top:14px">They also want</h3><div class="chips">{% for s in job.missing_skills %}{{ chip(s) }}{% endfor %}</div>{% endif %}
+    {% if job.red_flags %}<h3 style="margin-top:14px">Watch out for</h3><div class="chips">{% for s in job.red_flags %}{{ chip(s, 'bad', 'alert', 12) }}{% endfor %}</div>{% endif %}
+  {% else %}
+    <p class="muted">Not rated yet{% if job.reject_reason %}. It was skipped by your filters: <b>{{ job.reject_reason }}</b>{% endif %}.</p>
+    <p class="muted small">Click <b>Rate this job</b> to see how well it fits you (one AI call).</p>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{% macro job_description(job) -%}
+<div class="card">
+  <div class="card-head"><h2>Job description</h2><span class="spacer"></span>
+    {% if job.description_collapsible %}<button class="btn sm ghost" data-expand="#desc">Show full description</button>{% endif %}</div>
+  <div class="desc-box {{ 'collapsed' if job.description_collapsible }}" id="desc">{{ job.description or 'No description available - open the original post.' }}</div>
+</div>
+{%- endmacro %}

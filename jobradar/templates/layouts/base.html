@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Job Radar{% endblock %}</title>
+{% for sheet in stylesheets %}<link rel="stylesheet" href="{{ asset('css/' ~ sheet ~ '.css') }}">
+{% endfor %}
+</head>
+<body>
+<div class="layout">
+  {% include "components/organisms/sidebar.html" %}
+
+  <div class="main">
+    <header class="topbar">
+      <div class="titles">{% block header %}{% endblock %}</div>
+      {% block header_actions %}{% endblock %}
+      <button class="btn primary" data-open-find>{{ icon('search', 16) }} Find jobs</button>
+    </header>
+    <div class="content {% block content_class %}{% endblock %}">
+      {% if not configured.api and request.endpoint != 'settings.page' %}
+      <div class="callout info">{{ icon('key') }}<div><b>One more step:</b> add your AI key in <a href="{{ url_for('settings.page') }}">Settings</a> so the app can rate jobs and write applications for you.</div></div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+{% include "components/organisms/find_dialog.html" %}
+{% include "components/organisms/task_progress.html" %}
+
+<div id="toasts"></div>
+<script type="application/json" id="flashes">{{ get_flashed_messages(with_categories=true)|tojson }}</script>
+<script type="module" src="{{ asset('js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

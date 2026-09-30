@@ -1,0 +1,9 @@
+{% from "components/atoms/stat_icon.html" import stat_icon %}
+
+{# A big number with a label. With href the whole tile is a link. #}
+{% macro stat_tile(ic, value, label, tone='', href='') -%}
+{% if href %}<a class="card stat" href="{{ href }}" style="color:inherit;text-decoration:none">{% else %}<div class="card stat">{% endif %}
+  {{ stat_icon(ic, tone) }}
+  <div><div class="num">{{ value }}</div><div class="lbl">{{ label }}</div></div>
+{% if href %}</a>{% else %}</div>{% endif %}
+{%- endmacro %}

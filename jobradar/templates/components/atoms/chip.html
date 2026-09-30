@@ -1,0 +1,8 @@
+{# Chips and badges. tone: ok | bad | warn | info | accent | "" #}
+{% macro chip(label, tone='', ic=none, ic_size=13, style='') -%}
+<span class="chip {{ tone }}" {% if style %}style="{{ style }}"{% endif %}>{% if ic %}{{ icon(ic, ic_size) }} {% endif %}{{ label }}</span>
+{%- endmacro %}
+
+{% macro badge(count, soft=false, title='') -%}
+<span class="badge {{ 'soft' if soft }}" {% if title %}title="{{ title }}"{% endif %}>{{ count }}</span>
+{%- endmacro %}

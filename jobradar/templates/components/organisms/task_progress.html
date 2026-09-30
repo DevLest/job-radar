@@ -1,0 +1,10 @@
+{# Live progress of a background task; filled by static/js/components/task-progress.js. #}
+<div id="progress" class="progress-card hidden" aria-live="polite">
+  <div class="p-head"><span class="p-spin" style="width:16px;height:16px;border-radius:50%;border:2px solid var(--accent);border-right-color:transparent;animation:spin .7s linear infinite"></span>
+    <b class="p-title">Working on it…</b>
+    <button class="btn ghost sm p-log" title="Show technical details">Details</button>
+    <button class="btn ghost icon-btn p-close" aria-label="Close">{{ icon('x', 16) }}</button></div>
+  <ul></ul>
+  <pre class="hidden"></pre>
+  <div class="p-sum hidden"></div>
+</div>

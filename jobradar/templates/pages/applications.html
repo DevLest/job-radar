@@ -1,0 +1,16 @@
+{% extends "layouts/base.html" %}
+{% from "components/molecules/empty_state.html" import empty_state %}
+{% from "components/organisms/board.html" import board as application_board %}
+{% block title %}Applications - Job Radar{% endblock %}
+{% block header %}<h1>Applications</h1><div class="sub">Drag a card to update its status. Replies from employers move cards automatically.</div>{% endblock %}
+{% block header_actions %}{% if configured.imap %}<button class="btn" data-task="updates">{{ icon('inbox', 16) }} Check for replies</button>{% endif %}{% endblock %}
+{% block content_class %}wide{% endblock %}
+{% block content %}
+{% if not board.total %}
+  {% call empty_state('board', 'No applications yet', 'Open a job you like and click "Write it for me" or "I\'ve applied" - it will show up here so you can follow it.') %}
+    <a class="btn primary" href="{{ url_for('jobs.list') }}">{{ icon('briefcase', 16) }} Browse your matches</a>
+  {% endcall %}
+{% else %}
+{{ application_board(board) }}
+{% endif %}
+{% endblock %}

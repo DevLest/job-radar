@@ -1,0 +1,20 @@
+{# "Add a job you found" - opened by any [data-open-dialog="#add-dialog"]. #}
+<dialog id="add-dialog">
+  <form method="post" action="{{ url_for('jobs.add') }}">
+    <div class="m-head"><div style="flex:1"><h2 style="font-size:19px">Add a job you found</h2>
+      <p class="muted" style="margin:0">From LinkedIn, a Facebook group, a friend… The AI will rate it for you.</p></div>
+      <button type="button" class="btn ghost icon-btn" data-close aria-label="Close">{{ icon('x') }}</button></div>
+    <div class="m-body">
+      <div class="grid g2" style="gap:0 12px">
+        <label class="field"><span class="label">Job title *</span><input type="text" name="title" required></label>
+        <label class="field"><span class="label">Company</span><input type="text" name="company"></label>
+        <label class="field"><span class="label">Link</span><input type="text" name="url" placeholder="https://…"></label>
+        <label class="field"><span class="label">Location</span><input type="text" name="location"></label>
+        <label class="field"><span class="label">Work type</span><select name="work_type"><option value="">Not sure</option><option value="remote">Remote</option><option value="hybrid">Hybrid</option><option value="onsite">On-site</option></select></label>
+        <label class="field"><span class="label">Salary</span><input type="text" name="salary" placeholder="e.g. PHP 80,000 / month"></label>
+      </div>
+      <label class="field"><span class="label">Job description</span><textarea name="description" rows="6" placeholder="Paste the full job post here"></textarea></label>
+    </div>
+    <div class="m-foot"><button type="button" class="btn ghost" data-close>Cancel</button><button class="btn primary">{{ icon('plus', 16) }} Add job</button></div>
+  </form>
+</dialog>

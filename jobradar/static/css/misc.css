@@ -1,0 +1,18 @@
+/* Tables (usage), funnel, details, dropdown menu, inline code. */
+/* ---------- tables (usage) ---------- */
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { color: var(--mute); font-weight: 600; font-size: 12.5px; }
+.funnel { display: flex; flex-direction: column; gap: 10px; }
+.funnel .fr { display: grid; grid-template-columns: 140px 1fr 60px; gap: 10px; align-items: center; font-size: 13.5px; }
+.funnel .fb { height: 22px; border-radius: 6px; background: linear-gradient(90deg, var(--accent), #22c1a8); min-width: 4px; }
+details.more > summary { cursor: pointer; list-style: none; font-weight: 600; color: var(--accent); }
+details.more > summary::-webkit-details-marker { display: none; }
+.menu { position: relative; }
+.menu-list { position: absolute; right: 0; top: calc(100% + 6px); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-lg);
+  min-width: 260px; padding: 6px; z-index: 25; display: none; }
+.menu.open .menu-list { display: block; }
+.menu-list button, .menu-list a { display: flex; width: 100%; gap: 10px; align-items: center; padding: 9px 10px; border: 0; background: none; color: var(--fg); font: inherit;
+  border-radius: 8px; cursor: pointer; text-align: left; }
+.menu-list button:hover, .menu-list a:hover { background: var(--panel-2); text-decoration: none; }
+code { background: var(--panel-2); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }

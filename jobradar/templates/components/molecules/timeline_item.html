@@ -1,0 +1,6 @@
+{# One application event. `event` is an EventView; `full` adds the date/time and event kind. #}
+{% macro timeline_item(event, full=false) -%}
+<li><span class="tl-ico {{ event.kind }}">{{ icon(event.icon, 14) }}</span>
+  <div>{% if full %}<div class="small muted">{{ event.ts[:16]|replace('T', ' ') }} · {{ event.kind_label }}</div>
+    {% else %}<div class="small muted">{{ event.ts|ago }}</div>{% endif %}{{ event.summary }}</div></li>
+{%- endmacro %}

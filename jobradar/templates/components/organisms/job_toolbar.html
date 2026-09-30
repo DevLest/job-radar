@@ -1,0 +1,29 @@
+{% from "components/atoms/chip.html" import badge %}
+
+{# Tabs, search, work-type segments and sort for the jobs list. `page` is a JobListPage. #}
+{% macro job_toolbar(page) -%}
+<nav class="tabs">
+  {% for tab in page.tabs %}
+  <a href="{{ url_for('jobs.list', tab=tab.key) }}" class="{{ 'on' if page.tab == tab.key }}">{{ tab.label }} {{ badge(tab.count, soft=not (page.tab == tab.key and tab.key in ('best', 'maybe'))) }}</a>
+  {% endfor %}
+</nav>
+
+<form class="toolbar" method="get">
+  <input type="hidden" name="tab" value="{{ page.tab }}">
+  <label class="search">{{ icon('search', 16) }}<input name="q" value="{{ page.search }}" placeholder="Search title, company, skill…" data-live-search></label>
+  <div class="seg">
+    {% for key, label, ic in [('', 'Any', 'briefcase'), ('remote', 'Remote', 'globe'), ('hybrid', 'Hybrid', 'hybrid'), ('onsite', 'On-site', 'building')] %}
+    <a href="{{ url_for('jobs.list', tab=page.tab, q=page.search, source=page.source, sort=page.sort, wt=key) }}" class="{{ 'on' if page.work_type == key }}">{{ icon(ic, 14) }} {{ label }}</a>
+    {% endfor %}
+  </div>
+  <select name="source" data-autosubmit style="width:auto">
+    <option value="">All sources</option>
+    {% for source in page.sources %}<option {{ 'selected' if page.source == source }}>{{ source }}</option>{% endfor %}
+  </select>
+  <select name="sort" data-autosubmit style="width:auto">
+    <option value="best" {{ 'selected' if page.sort == 'best' }}>Best first</option>
+    <option value="new" {{ 'selected' if page.sort == 'new' }}>Newest first</option>
+  </select>
+  {% if page.work_type %}<input type="hidden" name="wt" value="{{ page.work_type }}">{% endif %}
+</form>
+{%- endmacro %}

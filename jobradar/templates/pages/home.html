@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+{% from "components/atoms/stat_icon.html" import small_stat_icon %}
+{% from "components/molecules/mini_job.html" import mini_job %}
+{% from "components/molecules/stat_tile.html" import stat_tile %}
+{% from "components/organisms/setup_checklist.html" import setup_checklist %}
+{% block header %}<h1>Home</h1><div class="sub">Your job search at a glance</div>{% endblock %}
+{% block content %}
+{% if page.setup_done < page.setup|length %}{{ setup_checklist(page) }}{% endif %}
+
+<div class="grid g4" style="margin-bottom:20px">
+  {{ stat_tile('star', page.stats.matches, 'Great matches waiting', 'green', url_for('jobs.list', tab='best')) }}
+  {{ stat_tile('sparkles', page.stats.new_week, 'New good jobs this week', '', url_for('jobs.list', tab='rated')) }}
+  {{ stat_tile('send', page.stats.applied, 'Applications sent', 'blue', url_for('applications.board')) }}
+  {{ stat_tile('calendar', page.stats.interviews, 'Interviews & offers', 'amber', url_for('applications.board')) }}
+</div>
+
+<div class="split">
+  <div class="card">
+    <div class="card-head"><h2>Best matches for you</h2><span class="spacer"></span>
+      {% if page.top %}<a class="btn sm ghost" href="{{ url_for('jobs.list') }}">See all {{ icon('arrow-right', 14) }}</a>{% endif %}</div>
+    {% for card in page.top %}
+      {{ mini_job(card) }}
+    {% else %}
+      <div class="empty" style="padding:24px"><div class="ico">{{ icon('search', 26) }}</div>
+        <h2>No rated jobs yet</h2><p>Click <b>Find jobs</b> - it searches job sites, skips what doesn't fit, and rates the rest.</p>
+        <button class="btn primary" data-open-find>{{ icon('search', 16) }} Find jobs</button></div>
+    {% endfor %}
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Needs your attention</h2></div>
+      {% for app in page.attention %}
+        <a class="mini-job" href="{{ url_for('applications.detail', app_id=app.id) }}">
+          {{ small_stat_icon('alert', 'amber') }}
+          <div><div class="t">{{ app.company }}</div><div class="small muted">{{ app.next_action }}</div></div></a>
+      {% else %}
+        <p class="muted small" style="margin:0">Nothing right now. Replies from employers show up here.</p>
+      {% endfor %}
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Recent activity</h2></div>
+      <ul class="feed">
+        {% for event in page.activity %}
+          <li><span class="muted" style="width:78px;flex:none">{{ event.ts|ago }}</span>
+            <span><b>{{ event.company }}</b> · {{ event.summary }}</span></li>
+        {% else %}
+          <li class="muted">When you apply to jobs, the history appears here.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+<p class="muted small" style="margin-top:16px">{{ page.stats.seen }} jobs checked so far · the free filter skipped the ones that don't fit before any AI cost.</p>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "layouts/base.html" %}
+{% from "components/organisms/pref_section.html" import pref_section %}
+{% block title %}Preferences - Job Radar{% endblock %}
+{% block header %}<h1>Preferences</h1><div class="sub">Tell us what you want. Jobs that don't fit are skipped for free, before any AI cost.</div>{% endblock %}
+{% block content %}
+{% if saved %}
+<div class="callout ok" style="align-items:center">{{ icon('check') }}<div style="flex:1"><b>Saved.</b> Want to re-check the jobs you already have with these preferences? It's free.</div>
+  <button class="btn sm" data-task="refilter">{{ icon('refresh', 14) }} Update my job list</button></div>
+{% endif %}
+<form method="post" id="prefs-form">
+  <input type="hidden" name="_tab" value="{{ tab }}">
+  <div class="prefs">
+    <nav class="prefs-nav">
+      {% for t in tabs %}<a href="?tab={{ t.key }}" data-tab="{{ t.key }}" class="{{ 'on' if tab == t.key }}">{{ icon(t.icon, 17) }} {{ t.label }}</a>{% endfor %}
+    </nav>
+    <div>
+      {% for t in tabs %}
+      <div class="pref-pane {{ 'hidden' if tab != t.key }}" data-tab="{{ t.key }}">
+        {% for section in t.sections %}{{ pref_section(section, values) }}{% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="savebar" id="savebar"><span>You have unsaved changes</span>
+    <button type="button" class="btn sm ghost" id="savebar-reset" style="color:inherit">Discard</button>
+    <button class="btn sm primary">{{ icon('check', 14) }} Save</button></div>
+</form>
+{% endblock %}

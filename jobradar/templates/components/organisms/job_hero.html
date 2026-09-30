@@ -1,0 +1,42 @@
+{% from "components/atoms/chip.html" import chip %}
+{% from "components/atoms/ring.html" import ring, verdict_word %}
+{% from "components/molecules/work_chip.html" import work_chip %}
+
+{# Top of the job page: score, facts and actions. `job` is a JobDetailView. #}
+{% macro job_hero(job) -%}
+<div class="card" style="margin-bottom:16px">
+  <div class="job-hero" style="flex-wrap:wrap">
+    <div style="text-align:center">{{ ring(job.score, job.verdict, job.verdict_word, 'lg') }}
+      {% if job.is_rated %}{{ verdict_word(job.verdict, job.verdict_word, 'font-size:13px') }}{% endif %}</div>
+    <div style="flex:1;min-width:240px">
+      <h1>{{ job.title }}</h1>
+      <div class="muted" style="margin:4px 0 10px;display:flex;gap:6px 14px;flex-wrap:wrap">
+        <span>{{ icon('briefcase', 14) }} {{ job.company or 'Company not listed' }}</span>
+        {% if job.location %}<span>{{ icon('pin', 14) }} {{ job.location }}</span>{% endif %}
+        <span>{{ icon('clock', 14) }} Posted {{ job.posted_at|ago or '—' }}</span><span>via {{ job.source }}</span>
+      </div>
+      <div class="chips">{{ work_chip(job.work_type) }}{% if job.pay %}{{ chip(job.pay, '', 'wallet') }}{% endif %}
+        {% if job.employment_type %}{{ chip(job.employment_type) }}{% endif %}</div>
+    </div>
+    <div class="row">
+      {% if job.url %}<a class="btn" href="{{ job.url }}" target="_blank" rel="noopener">{{ icon('external', 16) }} View original post</a>{% endif %}
+      <form method="post" action="{{ url_for('jobs.score', job_id=job.id) }}">
+        <button class="btn {{ '' if job.is_rated else 'primary' }}" data-loading="Rating…">{{ icon('sparkles', 16) }} {{ 'Rate again' if job.is_rated else 'Rate this job' }}</button></form>
+      <form method="post" action="{{ url_for('jobs.ignore', job_id=job.id) }}">
+        {% if job.is_hidden %}<input type="hidden" name="undo" value="1"><button class="btn">Show again</button>
+        {% else %}<button class="btn ghost" title="Not interested">{{ icon('eye-off', 16) }} Hide</button>{% endif %}</form>
+    </div>
+  </div>
+</div>
+{%- endmacro %}
+
+{# Warns before you apply twice to the same role or company. #}
+{% macro prior_warning(prior, same_role) -%}
+{% if prior %}
+<div class="callout">{{ icon('alert') }}<div>
+  {% if same_role %}<b>You already applied to this exact role.</b>
+  {% else %}<b>You already applied at {{ prior[0].company }}</b> ({{ prior|length }} application{{ 's' if prior|length > 1 }}):{% endif %}
+  {% for p in prior[:3] %}<a href="{{ url_for('applications.detail', app_id=p.id) }}">{{ p.title }}</a> ({{ p.status_label }}, {{ p.applied_at|ago }}){{ ', ' if not loop.last }}{% endfor %}
+</div></div>
+{% endif %}
+{%- endmacro %}

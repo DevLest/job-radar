@@ -1,0 +1,33 @@
+{% extends "layouts/base.html" %}
+{% from "components/molecules/stat_tile.html" import stat_tile %}
+{% block title %}AI spend - Job Radar{% endblock %}
+{% block header %}<h1>AI spend</h1><div class="sub">What the AI has cost, and how many jobs were skipped for free.</div>{% endblock %}
+{% block content %}
+<div class="grid g3" style="margin-bottom:20px">
+  {{ stat_tile('wallet', '$%.2f' % nav.spent, 'Total so far') }}
+  {{ stat_tile('calendar', '$%.2f' % page.month, 'This month', 'blue') }}
+  {{ stat_tile('filter', page.skipped_free, 'Jobs skipped for free', 'green') }}
+</div>
+<div class="split">
+  <div class="card" style="padding:0">
+    <div class="card-head" style="padding:18px 20px 0"><h2>By feature</h2></div>
+    <table>
+      <tr><th>What</th><th>Uses</th><th>Cost</th><th>Per use</th></tr>
+      {% for feature in page.features %}
+      <tr><td><b>{{ feature.label }}</b><div class="small muted">{{ feature.model }}</div></td><td>{{ feature.calls }}</td>
+        <td>${{ '%.3f' % feature.usd }}</td><td class="muted">${{ '%.4f' % feature.per_call }}</td></tr>
+      {% else %}<tr><td colspan="4" class="muted" style="padding:24px 20px">No AI used yet.</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Where jobs went</h2></div>
+    <div class="funnel">
+      {% for step in page.funnel %}
+      <div class="fr"><span>{{ step.label }}</span><div><div class="fb" style="width:{{ step.percent }}%"></div></div><b>{{ step.count }}</b></div>
+      {% endfor %}
+    </div>
+    {% if page.reasons %}<h3 style="margin-top:20px">Top reasons jobs were skipped</h3>
+    {% for reason, count in page.reasons %}<div class="row small" style="justify-content:space-between;padding:4px 0"><span class="fg2">{{ reason }}</span><b>{{ count }}</b></div>{% endfor %}{% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% from "components/atoms/chip.html" import badge %}
+{% set section = request.blueprint or '' %}
+<aside class="side">
+  <a class="brand" href="{{ url_for('home.index') }}"><span class="brand-mark">{{ icon('zap', 17) }}</span><span>Job Radar</span></a>
+  <a class="nav {{ 'on' if section == 'home' }}" href="{{ url_for('home.index') }}">{{ icon('home') }} Home</a>
+  <a class="nav {{ 'on' if section == 'jobs' }}" href="{{ url_for('jobs.list') }}">{{ icon('briefcase') }} Jobs
+    {% if nav.matches %}{{ badge(nav.matches, title="Top matches you haven't acted on") }}{% endif %}</a>
+  <a class="nav {{ 'on' if section == 'applications' }}" href="{{ url_for('applications.board') }}">{{ icon('board') }} Applications
+    {% if nav.active_apps %}{{ badge(nav.active_apps, soft=true) }}{% endif %}</a>
+  <a class="nav {{ 'on' if section == 'cv' }}" href="{{ url_for('cv.page') }}">{{ icon('file') }} My CV</a>
+  <a class="nav {{ 'on' if section == 'preferences' }}" href="{{ url_for('preferences.page') }}">{{ icon('sliders') }} Preferences</a>
+  <a class="nav {{ 'on' if section == 'settings' }}" href="{{ url_for('settings.page') }}">{{ icon('settings') }} Settings</a>
+  <div class="foot">
+    <a href="{{ url_for('usage.page') }}" class="row" style="color:var(--fg-2)">{{ icon('chart', 15) }} AI spend: <b>${{ '%.2f' % nav.spent }}</b></a>
+  </div>
+</aside>

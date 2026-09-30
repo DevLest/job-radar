@@ -1,0 +1,36 @@
+{% from "components/atoms/chip.html" import chip %}
+{% from "components/atoms/stat_icon.html" import small_stat_icon, stat_icon %}
+
+{# What the AI read from the CV, and the "Use it" action. `analysis` is the CV analysis dict. #}
+{% macro cv_profile(analysis) -%}
+<div class="card">
+  <div class="row" style="align-items:flex-start;margin-bottom:12px">
+    <div class="stat">{{ stat_icon('user') }}</div>
+    <div style="flex:1"><h2 style="font-size:19px">{{ analysis.full_name or 'You' }}</h2>
+      <div class="fg2">{{ analysis.headline }}</div>
+      <div class="chips" style="margin-top:8px">{{ chip(analysis.seniority|capitalize, 'accent') }}
+        {{ chip(analysis.years_experience ~ ' years') }}
+        {% if analysis.based_in %}{{ chip(analysis.based_in, '', 'pin', 12) }}{% endif %}
+        {% for language in analysis.languages_spoken %}{{ chip(language) }}{% endfor %}</div></div>
+  </div>
+  <p>{{ analysis.summary }}</p>
+  <h3 style="margin-top:14px">Main skills</h3>
+  <div class="chips">{% for s in analysis.primary_skills %}{{ chip(s, 'ok') }}{% endfor %}</div>
+  <h3 style="margin-top:14px">Other skills</h3>
+  <div class="chips">{% for s in analysis.secondary_skills %}{{ chip(s) }}{% endfor %}</div>
+  {% if analysis.learning_skills %}<h3 style="margin-top:14px">Some experience</h3>
+  <div class="chips">{% for s in analysis.learning_skills %}{{ chip(s) }}{% endfor %}</div>{% endif %}
+  <div class="callout ok" style="margin:20px 0 0;align-items:center">{{ icon('sparkles') }}
+    <form method="post" action="{{ url_for('cv.apply') }}" class="row" style="flex:1;justify-content:space-between">
+      <div><b>Use this for my preferences</b><div class="small">Fills in your skills, level and details so job matching works better.</div>
+        <label class="small" style="display:flex;gap:6px;margin-top:6px;align-items:center"><input type="checkbox" name="replace" value="1"> Replace my current skills instead of adding to them</label></div>
+      <button class="btn primary">{{ icon('check', 15) }} Use it</button>
+    </form>
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro cv_feedback(ic, tone, title, items) -%}
+<div class="card"><div class="card-head">{{ small_stat_icon(ic, tone) }}<h2>{{ title }}</h2></div>
+  <ul style="margin:0;padding-left:18px">{% for item in items %}<li>{{ item }}</li>{% endfor %}</ul></div>
+{%- endmacro %}

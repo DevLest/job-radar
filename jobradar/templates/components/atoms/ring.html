@@ -1,0 +1,9 @@
+{# Score ring: the 0-100 fit score, coloured by verdict. #}
+{% macro ring(score, verdict, title='', size='') -%}
+{% if score is not none %}<div class="ring {{ size }} v-{{ verdict }}" style="--p: {{ score }}" title="{{ title }}"><b>{{ score }}</b></div>
+{%- else %}<div class="ring {{ size }} none" title="Not rated yet"><b>?</b></div>{% endif %}
+{%- endmacro %}
+
+{% macro verdict_word(verdict, word, style='') -%}
+<div class="verdict-word v-{{ verdict }}" {% if style %}style="{{ style }}"{% endif %}>{{ word }}</div>
+{%- endmacro %}

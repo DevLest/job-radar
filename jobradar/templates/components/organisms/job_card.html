@@ -1,0 +1,39 @@
+{% from "components/atoms/chip.html" import chip %}
+{% from "components/atoms/ring.html" import ring, verdict_word %}
+{% from "components/molecules/work_chip.html" import work_chip %}
+
+{# A job in the list. `card` is a JobCardView; behaviour lives in static/js/components/job-card.js. #}
+{% macro job_card(card, show_reason=false) -%}
+<article class="job-card" data-href="{{ url_for('jobs.detail', job_id=card.id) }}" data-search="{{ card.search_text }}">
+  <div>{{ ring(card.score, card.verdict, card.verdict_word) }}
+    {% if card.score is not none %}{{ verdict_word(card.verdict, card.verdict_word) }}{% endif %}</div>
+  <div class="body">
+    <a class="title" href="{{ url_for('jobs.detail', job_id=card.id) }}">{{ card.title }}</a>
+    <div class="meta">
+      <span>{{ icon('briefcase', 13) }} {{ card.company or 'Company not listed' }}</span>
+      {% if card.location_short %}<span>{{ icon('pin', 13) }} {{ card.location_short }}</span>{% endif %}
+      <span>{{ icon('clock', 13) }} {{ card.posted_at|ago or 'date unknown' }}</span>
+      <span class="muted">via {{ card.source }}</span>
+    </div>
+    <div class="chips">
+      {{ work_chip(card.work_type) }}
+      {% if card.pay_short %}{{ chip(card.pay_short, '', 'wallet') }}{% endif %}
+      {% for fit in card.fit_chips %}{{ chip(fit.label, fit.tone) }}{% endfor %}
+      {% for skill in card.top_skills %}{{ chip(skill, 'ok', 'check', 12) }}{% endfor %}
+      {% if card.applied.same_role_applied_at %}{{ chip('Applied ' ~ card.applied.same_role_applied_at|ago, 'ok') }}
+      {% elif card.applied.at_company %}{{ chip('You applied at this company', 'warn', 'alert', 12) }}{% endif %}
+    </div>
+    {% if card.summary %}<p class="why">{{ card.summary }}</p>{% endif %}
+    {% if show_reason and card.reject_reason %}<p class="why muted">Skipped because: {{ card.reject_reason }}</p>{% endif %}
+  </div>
+  <div class="actions">
+    {% if card.is_hidden %}
+      <button class="btn sm" data-act="undo-hide" data-id="{{ card.id }}">Show again</button>
+    {% else %}
+      {% if card.can_rate %}<button class="btn sm primary" data-act="rate" data-id="{{ card.id }}" title="One AI call (~$0.01)">{{ icon('sparkles', 14) }} Rate this job</button>{% endif %}
+      {% if card.url %}<a class="btn sm" href="{{ card.url }}" target="_blank" rel="noopener">{{ icon('external', 14) }} Open</a>{% endif %}
+      <button class="btn sm ghost" data-act="hide" data-id="{{ card.id }}" title="Not interested">{{ icon('eye-off', 14) }} Hide</button>
+    {% endif %}
+  </div>
+</article>
+{%- endmacro %}

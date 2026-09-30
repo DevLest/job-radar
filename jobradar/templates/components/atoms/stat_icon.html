@@ -1,0 +1,9 @@
+{# The round tinted icon used in stat tiles and card headers. tone: green | blue | amber | "" #}
+{% macro stat_icon(ic, tone='', size=22) -%}
+<div class="ico {{ tone }}">{{ icon(ic, size) }}</div>
+{%- endmacro %}
+
+{# Smaller variant inside a header: <span class="stat"><span class="ico">. #}
+{% macro small_stat_icon(ic, tone='') -%}
+<span class="stat"><span class="ico {{ tone }}" style="width:34px;height:34px">{{ icon(ic, 16) }}</span></span>
+{%- endmacro %}

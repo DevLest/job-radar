@@ -1,0 +1,12 @@
+{% from "components/atoms/ring.html" import ring %}
+{% from "components/molecules/work_chip.html" import work_chip %}
+
+{# Compact job row for lists on the home page. `card` is a JobCardView. #}
+{% macro mini_job(card) -%}
+<a class="mini-job" href="{{ url_for('jobs.detail', job_id=card.id) }}">
+  {{ ring(card.score, card.verdict, card.verdict_word, 'sm') }}
+  <div style="flex:1;min-width:0"><div class="t">{{ card.title }}</div>
+    <div class="small muted">{{ card.company or '—' }} · {{ card.posted_at|ago }}</div></div>
+  {{ work_chip(card.work_type) }}
+</a>
+{%- endmacro %}

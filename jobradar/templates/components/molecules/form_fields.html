@@ -1,0 +1,18 @@
+{% from "components/atoms/chip.html" import chip %}
+
+{% macro text_field(name, label, value, placeholder='') -%}
+<label class="field"><span class="label">{{ label }}</span><input type="text" name="{{ name }}" value="{{ value }}" placeholder="{{ placeholder }}" autocomplete="off"></label>
+{%- endmacro %}
+
+{# Secrets are never shown: a saved one is marked and a blank field keeps it. #}
+{% macro secret_field(name, label, saved, placeholder='') -%}
+<label class="field"><span class="label">{{ label }} {% if saved %}{{ chip('saved', 'ok', 'check', 12, 'margin-left:6px') }}{% endif %}</span>
+  <input type="password" name="{{ name }}" placeholder="{{ 'Leave blank to keep the saved one' if saved else placeholder }}" autocomplete="off"></label>
+{%- endmacro %}
+
+{# Card header with a tinted icon, a title/subtitle and a status chip. #}
+{% macro section_head(ic, tone, title, subtitle, status, status_tone) -%}
+<div class="card-head"><div class="stat"><div class="ico {{ tone }}">{{ icon(ic, 22) }}</div></div>
+  <div style="flex:1"><h2>{{ title }}</h2><div class="small muted">{{ subtitle }}</div></div>
+  {{ chip(status, status_tone) }}</div>
+{%- endmacro %}

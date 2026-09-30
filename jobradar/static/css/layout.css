@@ -1,0 +1,43 @@
+/* Page shell (sidebar, topbar, content) and layout primitives (card, grid, split, row, stack). */
+/* ---------- layout ---------- */
+.layout { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+.side { background: var(--panel); border-right: 1px solid var(--line); padding: 18px 12px; position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; gap: 4px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--fg); padding: 4px 10px 18px; }
+.brand-mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, var(--accent), #22c1a8);
+  display: grid; place-items: center; color: #fff; }
+.side a.nav { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 9px; color: var(--fg-2); font-weight: 500; }
+.side a.nav:hover { background: var(--panel-2); text-decoration: none; color: var(--fg); }
+.side a.nav.on { background: var(--accent-soft); color: var(--accent); }
+.side .badge { margin-left: auto; }
+.side .foot { margin-top: auto; padding: 12px; border-top: 1px solid var(--line); font-size: 12.5px; }
+.main { min-width: 0; }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 18px 32px; border-bottom: 1px solid var(--line); background: var(--bg);
+  position: sticky; top: 0; z-index: 20; }
+.topbar .titles { flex: 1; min-width: 0; }
+.topbar .sub { color: var(--mute); margin-top: 2px; }
+.content { padding: 24px 32px 80px; max-width: 1240px; }
+.content.wide { max-width: none; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .side { position: static; height: auto; flex-direction: row; overflow-x: auto; padding: 8px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .brand { padding: 4px 8px; } .brand span, .side .foot { display: none; }
+  .side a.nav { white-space: nowrap; padding: 8px 10px; }
+  .topbar { padding: 14px 16px; position: static; flex-wrap: wrap; } .content { padding: 16px 16px 60px; }
+}
+
+/* ---------- surfaces ---------- */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; box-shadow: var(--shadow); }
+.card + .card { margin-top: 16px; }
+.card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.card-head h2 { margin: 0; }
+.card-head .spacer { flex: 1; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.split { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 1000px) { .split, .g3, .g4 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px) { .split, .g2, .g3, .g4 { grid-template-columns: 1fr; } }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.stack > * + * { margin-top: 12px; }
+.sticky { position: sticky; top: 90px; }

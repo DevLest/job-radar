@@ -1,0 +1,36 @@
+/* Job Radar UI entry point - native ES modules, no build step. Init order matches the original app.js. */
+import { initToasts } from './components/toast.js';
+import { initLoadingButtons } from './components/loading-buttons.js';
+import { initDialogs } from './components/dialogs.js';
+import { initFindDialog } from './components/find-dialog.js';
+import { initTaskProgress } from './components/task-progress.js';
+import { initJobCards } from './components/job-card.js';
+import { initLiveSearch } from './components/live-search.js';
+import { initMenus } from './components/menu.js';
+import { initTagInputs } from './components/tag-input.js';
+import { initPreferencesPage } from './pages/preferences.js';
+import { initBoard } from './components/board.js';
+import { initStatusTrack } from './components/status-track.js';
+import { initDropzone } from './components/dropzone.js';
+import { initExpandables } from './components/expandable.js';
+import { initAjaxForms } from './components/ajax-form.js';
+import { initAutosubmit } from './components/autosubmit.js';
+import { initReload } from './components/reload.js';
+
+initToasts();
+initLoadingButtons();
+initDialogs();
+initFindDialog();
+initTaskProgress();
+initJobCards();
+initLiveSearch();
+initMenus();
+initTagInputs();
+initPreferencesPage();
+initBoard();
+initStatusTrack();
+initDropzone();
+initExpandables();
+initAjaxForms();
+initAutosubmit();
+initReload();

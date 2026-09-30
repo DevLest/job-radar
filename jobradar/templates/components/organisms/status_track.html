@@ -1,0 +1,24 @@
+{% from "components/atoms/chip.html" import chip %}
+
+{# Clickable status steps + close actions. `page` is an ApplicationPage; clicks: status-track.js. #}
+{% macro status_track(page) -%}
+{% set app = page.application %}
+<div style="margin-top:20px">
+  <div class="status-track">
+    {% for step in page.track %}
+    <button class="{{ 'reached' if step.reached }} {{ 'current' if step.current }}" data-id="{{ app.id }}" data-status="{{ step.status }}" title="Set status: {{ step.label }}">
+      <div class="bar"></div>{{ step.label }}</button>
+    {% endfor %}
+  </div>
+  <div class="row" style="margin-top:12px">
+    {% if page.is_closed %}{{ chip(page.status_label, 'bad') }}
+      <button class="btn sm ghost" data-id="{{ app.id }}" data-set-status="applied">Re-open</button>
+    {% else %}
+      <span class="muted small">Click a step to update. Did it not work out?</span>
+      <form method="post" action="{{ url_for('applications.status', app_id=app.id) }}" class="row">
+        <button class="btn sm" name="status" value="rejected">They said no</button>
+        <button class="btn sm" name="status" value="withdrawn">I withdrew</button></form>
+    {% endif %}
+  </div>
+</div>
+{%- endmacro %}

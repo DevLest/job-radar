@@ -1,0 +1,28 @@
+{% extends "layouts/base.html" %}
+{% from "components/organisms/cv_profile.html" import cv_feedback, cv_profile %}
+{% block title %}My CV - Job Radar{% endblock %}
+{% block header %}<h1>My CV</h1><div class="sub">The AI reads it once to learn your skills, and uses it to write your applications.</div>{% endblock %}
+{% block content %}
+<form method="post" action="{{ url_for('cv.upload') }}" enctype="multipart/form-data" style="margin-bottom:20px">
+  <label class="dropzone {{ 'hidden' if not configured.api }}">
+    <input type="file" name="file" accept=".pdf,.docx,.txt,.md">
+    <div class="ico">{{ icon('upload', 26) }}</div>
+    <h2>{{ 'Upload a new version' if cv else 'Drop your CV here' }}</h2>
+    <p class="muted" style="margin:4px 0 0">or <span style="color:var(--accent);font-weight:600">click to choose a file</span> · PDF, Word or text</p>
+    {% if cv %}<p class="small muted" style="margin:10px 0 0">Current: <b>{{ cv.filename }}</b>, uploaded {{ cv.uploaded_at|ago }}</p>{% endif %}
+  </label>
+  <div class="card analyzing"><div class="spinner"></div><h2>Reading your CV…</h2><p class="muted">This takes up to a minute. Please keep this page open.</p></div>
+</form>
+{% if not configured.api %}<div class="callout">{{ icon('key') }}<div>Add your AI key in <a href="{{ url_for('settings.page') }}">Settings</a> first - it's needed to read your CV.</div></div>{% endif %}
+
+{% if cv and cv.analysis %}
+<div class="split">
+  {{ cv_profile(cv.analysis) }}
+  <div class="stack">
+    {{ cv_feedback('star', 'green', 'Your strengths', cv.analysis.strengths) }}
+    {{ cv_feedback('alert', 'amber', 'What employers may miss', cv.analysis.gaps) }}
+    {{ cv_feedback('pen', 'blue', 'Tips to improve your CV', cv.analysis.cv_tips) }}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

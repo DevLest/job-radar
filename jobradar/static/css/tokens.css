@@ -1,0 +1,23 @@
+/* Design tokens: colors, radii, shadows (light + dark). */
+/* ---------- tokens ---------- */
+:root {
+  color-scheme: light dark;
+  --bg: #f4f5f7; --panel: #ffffff; --panel-2: #f8f9fb; --fg: #17181c; --fg-2: #4a4d57; --mute: #7c808c;
+  --line: #e5e7ec; --line-2: #d6d9e0;
+  --accent: #4f46e5; --accent-2: #6d64f5; --accent-soft: #eef0ff; --accent-fg: #ffffff;
+  --green: #12805c; --green-soft: #e3f6ee; --amber: #b25e00; --amber-soft: #fff1dc; --red: #c23a3a; --red-soft: #fde8e8;
+  --blue: #1f6fd1; --blue-soft: #e5f0fd;
+  --track: #e9eaf0; --shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+  --shadow-lg: 0 12px 32px -8px rgba(16,24,40,.18), 0 4px 8px -4px rgba(16,24,40,.08);
+  --r: 12px; --r-sm: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1013; --panel: #17181d; --panel-2: #1c1e24; --fg: #eceef3; --fg-2: #b9bcc6; --mute: #8a8e9a;
+    --line: #272a31; --line-2: #343843;
+    --accent: #8b84ff; --accent-2: #a39dff; --accent-soft: #23223d; --accent-fg: #111027;
+    --green: #4fd1a1; --green-soft: #13291f; --amber: #f2b252; --amber-soft: #2d2213; --red: #f08a8a; --red-soft: #321a1b;
+    --blue: #72acf7; --blue-soft: #16243a; --track: #2a2d35;
+    --shadow: 0 1px 2px rgba(0,0,0,.4); --shadow-lg: 0 16px 40px -8px rgba(0,0,0,.6);
+  }
+}

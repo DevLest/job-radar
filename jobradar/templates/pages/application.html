@@ -1,0 +1,57 @@
+{% extends "layouts/base.html" %}
+{% from "components/molecules/timeline_item.html" import timeline_item %}
+{% from "components/organisms/status_track.html" import status_track %}
+{% block title %}{{ page.application.company }} - Job Radar{% endblock %}
+{% block header %}<a class="small" href="{{ url_for('applications.board') }}">{{ icon('arrow-left', 14) }} Back to applications</a>{% endblock %}
+{% block content %}
+{% set app = page.application %}
+<div class="card" style="margin-bottom:16px">
+  <div class="row" style="justify-content:space-between;align-items:flex-start">
+    <div><h1>{{ app.company or 'Company' }}</h1>
+      <div class="muted" style="margin-top:4px">{{ app.title }}
+        {% if app.applied_at %} · applied {{ app.applied_at|ago }} via {{ app.method }}{% endif %}</div></div>
+    <div class="row">
+      {% if page.job_id %}<a class="btn" href="{{ url_for('jobs.detail', job_id=page.job_id) }}">{{ icon('briefcase', 15) }} Job details</a>{% endif %}
+      {% if app.url %}<a class="btn" href="{{ app.url }}" target="_blank" rel="noopener">{{ icon('external', 15) }} Original post</a>{% endif %}
+    </div>
+  </div>
+
+  {% if app.is_draft %}
+    <div class="callout info" style="margin:16px 0 0">{{ icon('pen') }}<div>This is still a draft. <a href="{{ url_for('jobs.detail', job_id=app.job_id) }}#apply">Finish and send it →</a></div></div>
+  {% else %}
+    {{ status_track(page) }}
+  {% endif %}
+</div>
+
+<div class="split">
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>{{ icon('alert', 17) }} Next step</h2></div>
+      <form method="post" action="{{ url_for('applications.status', app_id=app.id) }}" class="row" data-ajax>
+        <input type="hidden" name="status" value="{{ app.status }}">
+        <input type="text" name="next_action" value="{{ app.next_action or '' }}" placeholder="e.g. Prepare for the technical interview on Friday" style="flex:1">
+        <button class="btn">Save</button>
+      </form>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>{{ icon('pen', 17) }} Add a note</h2></div>
+      <form method="post" action="{{ url_for('applications.note', app_id=app.id) }}" class="row">
+        <input type="text" name="note" placeholder="Anything worth remembering - who you spoke to, salary talks…" style="flex:1"><button class="btn">Add</button>
+      </form>
+    </div>
+    {% if app.body %}
+    <div class="card"><div class="card-head"><h2>{{ icon('mail', 17) }} {{ 'What you sent' if not app.is_draft else 'Draft' }}</h2></div>
+      <div class="small muted" style="margin-bottom:8px">To: {{ app.to_email or '—' }} · Subject: {{ app.subject }}</div>
+      <div class="desc-box">{{ app.body }}</div></div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>{{ icon('clock', 17) }} History</h2><span class="spacer"></span>
+      <span class="small muted">Last checked for replies: {{ app.last_checked|ago or 'not yet' }}</span></div>
+    <ul class="timeline">
+      {% for event in page.events %}{{ timeline_item(event, full=true) }}
+      {% else %}<li class="muted">Nothing yet.</li>{% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

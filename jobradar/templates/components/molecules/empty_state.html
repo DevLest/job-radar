@@ -1,0 +1,4 @@
+{# Friendly empty state; the caller block adds optional actions. #}
+{% macro empty_state(ic, title, text) -%}
+<div class="card empty"><div class="ico">{{ icon(ic, 28) }}</div><h2>{{ title }}</h2><p>{{ text }}</p>{{ caller() if caller }}</div>
+{%- endmacro %}
