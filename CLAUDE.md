@@ -22,57 +22,72 @@ Never violate these rules unless the user explicitly tells you to. If a request 
 
 ---
 
-# Target Directory Structure
+# Directory Structure
 
 ```text
-run.py                          CLI entry: parses args, calls services only
+run.py                          CLI entry point -> jobradar/cli/main.py
 jobradar/
-  app.py                        Flask app factory: registers blueprints, filters, globals
-  container.py                  Composition root: builds repositories/services/clients (DIP)
+  app.py                        Flask app factory (blueprints, filters, guards) + serve()
+  container.py                  Composition root: one Container per request / background task (DIP)
+  cli/                          main.py (argparse, pipeline commands), commands.py (stats, report, dry-run)
 
-  domain/                       One folder per feature: never grouped by technical type
+  domain/                       One folder per feature - never grouped by technical type
     jobs/
-      job.py                    Entity: dataclass + behaviour (hide(), queue(), is_duplicate_of())
-      job_repository.py         SQL for the `jobs` table only
-      job_queries.py            Reusable WHERE / ORDER fragments (tabs, search, sort)
-      job_service.py            Use cases: add manual job, hide/unhide, list a tab
-      job_mapper.py             Entity/row -> view model or JSON dict
-      job_view.py               View-model / response dataclasses (the "DTOs")
-      job_routes.py             Flask Blueprint: HTTP only, thin
-    prefilter/                  Free (no-LLM) filtering rules
-    scoring/                    Claude scoring, batch submit/collect, schemas
-    applications/               Drafts, sending, status board, update checks
-    alerts/                     Alert-email parsing into jobs
-    cv/                         CV upload, text extraction, analysis
-    preferences/                profile.yaml + .env settings
-    usage/                      Token/cost tracking and the AI-spend page
+      job_posting.py            JobPosting: a job as a source reports it
+      job.py                    Job entity: funnel state + rules (hide(), queue(), record_score())
+      job_repository.py         SQL for the `jobs` table only (row <-> Job)
+      job_queries.py            Reusable WHERE / ORDER fragments + JobListFilter
+      job_service.py            Use cases: list a tab, detail page, add a manual job, hide/unhide
+      job_mapper.py             Job -> JobCardView / JobDetailView
+      job_prompt_mapper.py      Job -> the plain text Claude sees
+      job_labels.py             Words for Claude's enum answers, meter percentages
+      job_view.py               View-model dataclasses (the "DTOs")
+      job_routes.py             Blueprint "jobs": HTTP only, thin
+    applications/               entity, repositories, lifecycle/draft/sending services,
+                                reply / posting / follow-up checks, board mapper + views, routes
+    prefilter/                  prefilter_rules.py (RULES list), text_signals.py, pay_conversion.py, service
+    scoring/                    scoring_prompt.py, scoring_service.py (real-time), batch_scoring_service.py,
+                                batch_repository.py, cost_estimator.py
+    alerts/                     alert_links.py, alert_extractor.py (Claude), alert_service.py, seen_email_repository.py
+    cv/                         cv_files.py, cv_prompt.py, cv_repository.py, cv_profile_merge.py, cv_service.py, routes
+    preferences/                profile.yaml: defaults, repository, field definitions, form codec, service, routes
+    settings/                   .env connections: settings_service.py, routes
+    usage/                      token/cost repository, AI-spend page service, routes
+    home/                       home_service.py (dashboard), layout_service.py (sidebar counts), routes
+    report/                     static HTML/CSV report builder
 
-  sources/                      Job-feed adapters (Open/Closed: add a file, not an `if`)
-    job_source.py               `JobSource` Protocol: name, fetch(profile) -> list[Job]
-    remotive_source.py          One class per feed
-    ...
-    source_registry.py          The list of enabled sources
+  sources/                      Job-feed adapters (Open/Closed: add a file + one registry line)
+    job_source.py               JobSource / CompanyBoardSource Protocols + SourceQuery
+    <name>_source.py            One class per feed or ATS board
+    source_parsing.py           Salary, work type, number parsing shared by sources
+    source_registry.py          FEED_SOURCES / BOARD_SOURCES, in run order
+    feed_collector.py           Runs every enabled source; one broken source never stops a run
 
-  pipeline/                     Orchestration only: task runner, scheduler, step order
-                                (calls services and has no business rules of its own)
+  pipeline/                     Orchestration only: pipeline_steps.py, task_runner.py, scheduler.py,
+                                task_routes.py (no business rules of their own)
 
-  lib/                          Third-party / infrastructure wrappers (never import domain/)
-    database.py                 Connection, schema, column migrations
-    llm_client.py               Anthropic client, cost calc, usage logging hook
-    mail_client.py              IMAP / SMTP
+  lib/                          Infrastructure wrappers (never import domain/)
+    database.py + database_schema.py   Connection, schema, additive column migrations
+    key_value_store.py          The meta table
+    llm_client.py               Anthropic calls, batches, cost, usage callback
+    mail_client.py + email_text.py     IMAP / SMTP, email -> compact text
     http_client.py              httpx client + browser headers
+    env_file.py                 .env load / write
 
   shared/
-    utils/                      Pure helpers: text_utils.py, money_utils.py, date_utils.py
-    constants/                  work_types.py, application_statuses.py, ...
+    constants/                  paths.py, work_types.py
+    utils/                      date_utils.py, text_utils.py, format_utils.py, dict_utils.py, hash_utils.py
+
+  web/                          Flask plumbing: request_scope.py (container per request), responses.py
+                                (reply / JSON), security.py (same-origin POSTs), template_helpers.py, icons.py
 
   templates/                    Atomic Design (see UI section)
     components/atoms/  components/molecules/  components/organisms/
-    layouts/                    base.html (the "templates" tier)
-    pages/                      one per route: jobs.html, job.html, ...
+    layouts/base.html           the "templates" tier
+    pages/                      one per route: home, jobs, job, applications, application, cv, preferences, settings, usage
   static/
-    css/                        tokens.css, then one file per component tier
-    js/                         ES modules (see UI section)
+    css/                        tokens.css, base, layout, atoms, job-list, forms, pages, organisms, misc (link order = cascade)
+    js/                         main.js + lib/ + components/ + pages/ (ES modules, no bundler)
 
 tests/                          pytest, mirrors jobradar/ (tests/domain/jobs/test_job_service.py)
 ```
@@ -86,23 +101,15 @@ tests/                          pytest, mirrors jobradar/ (tests/domain/jobs/tes
 
 ---
 
-# Migration Policy (the codebase isn't there yet)
+# Keeping the Structure
 
-The current code is flat (`jobradar/web.py`, `scorer.py`, `sources.py`, ...). **Don't big-bang refactor.**
+The app was rebuilt into this structure with no behaviour change, checked page by page, prompt by prompt and
+database row by row against the original. Keep it that way:
 
-* **New code** goes straight into the target structure.
-* **When you change existing code**, move the part you touch into its target home in the same change: extract the SQL into a repository, the rule into the entity/service, the route into a blueprint. Leave a re-export in the old module only if other callers still import it.
-* A refactor-only change must not change behaviour. Keep it in its own commit.
-* Moving the whole of a large module (e.g. splitting `web.py` into blueprints) is fine **when the user asks for it**.
-
-Known hotspots to fix as you touch them:
-
-| Where | Problem | Target |
-|---|---|---|
-| `web.py` (676 lines) | Routes build SQL, call `scorer._save`, parse JSON | `domain/*/…_routes.py` → services |
-| `sources.py` `Fetcher` (444 lines) | Every feed in one class | `sources/*_source.py` + registry |
-| `templates/_ui.html` `job_card` | `loads(analysis)`, pay-string fallback logic | `job_mapper.py` builds a `JobCardView` |
-| `db.DB` | One class for every table | `lib/database.py` + one repository per table |
+* Every change lands in its feature folder. If you need a new place, add it here first.
+* A refactor-only change must not change behaviour. Keep it in its own commit, separate from features.
+* When a file approaches ~200 lines, split it by responsibility before adding more.
+* `container.py` is the only place that constructs services. Anything new gets a `cached_property` there.
 
 ---
 
@@ -137,8 +144,8 @@ Dependency direction is **inward only**: routes → services → (entities, repo
 
 * **SRP:** one reason to change per class/module. A service that both scores jobs and sends emails is two services.
 * **OCP:** extend by adding, not editing. New job feed = new `*_source.py` + one registry line. New work type or status = a constant, not a new `elif` chain scattered around.
-* **LSP:** every `JobSource` returns `list[Job]` and raises the same error type. Callers never special-case a source.
-* **ISP:** small `Protocol`s (`JobSource`, `MailSender`, `LlmClient`). Don't make a class implement methods it doesn't use.
+* **LSP:** every `JobSource` returns `list[JobPosting]` and raises the same error type. Callers never special-case a source.
+* **ISP:** small `Protocol`s (`JobSource`, `CompanyBoardSource`; clients injected via `container.py`). Don't make a class implement methods it doesn't use.
 * **DIP:** services take their dependencies in `__init__` (repositories, `llm_client`, `mail_client`). They never construct them or reach for globals. `container.py` wires everything, and tests pass fakes.
 
 ```python
@@ -187,9 +194,9 @@ class Application:
 
 | Tier | Location | Examples (from today's UI) |
 |---|---|---|
-| **Atoms** | `templates/components/atoms/*.html` | `icon`, `button`, `chip`, `badge`, `ring` (score) |
-| **Molecules** | `templates/components/molecules/*.html` | `work_chip`, `fit_chip`, `search_box`, `stat_tile`, `empty_state` |
-| **Organisms** | `templates/components/organisms/*.html` | `job_card`, `apply_panel`, `board_column`, `task_progress`, `prefs_section` |
+| **Atoms** | `templates/components/atoms/*.html` (+ CSS-only atoms like `.btn`) | `icon` (global), `chip`, `badge`, `ring`, `verdict_word`, `stat_icon` |
+| **Molecules** | `templates/components/molecules/*.html` | `work_chip`, `stat_tile`, `empty_state`, `mini_job`, `timeline_item`, `pref_field`, form fields |
+| **Organisms** | `templates/components/organisms/*.html` | `job_card`, `job_hero`, `score_breakdown`, `apply_panel`, `board`, `status_track`, `sidebar`, `find_dialog`, `task_progress`, `pref_section`, `cv_profile` |
 | **Templates** | `templates/layouts/*.html` | `base.html` (sidebar, header, toasts) |
 | **Pages** | `templates/pages/*.html` | `jobs.html`, `job.html`, `applications.html`, `cv.html`, ... |
 
@@ -197,14 +204,14 @@ class Application:
 
 * One macro file per component, named after the component: `atoms/chip.html` exposes `chip(...)`.
 * A tier may only import **lower** tiers (organisms import molecules/atoms, never pages).
-* Templates **render only**: no `loads(...)`, no fallback chains that compute values, no business decisions. The service/mapper passes a ready view model (`JobCardView.pay_label`, `.matched_skills`, `.applied_badge`).
+* Templates **render only**: no `loads(...)`, no fallback chains that compute values, no business decisions. The service/mapper passes a ready view model (`JobCardView.pay_short`, `.matched_skills`, `.applied_badge`).
 * Pages extend a layout and compose organisms; they hold no reusable markup.
-* **CSS:** design tokens (colors, spacing, radii) in `static/css/tokens.css` as custom properties. One file per tier (`atoms.css`, `molecules.css`, `organisms.css`, `layout.css`). Class names match the component (`.job-card`, `.chip`). No inline styles except CSS variables like `--p`.
+* **CSS:** design tokens (colors, spacing, radii) in `static/css/tokens.css` as custom properties. The files are listed in `web/template_helpers.py` `STYLESHEETS`; that link order is the cascade, so add rules to the file whose section they belong to rather than reordering. Class names match the component (`.job-card`, `.chip`). Prefer classes over adding new inline styles.
 * **JS:** ES modules loaded with `<script type="module">`, no bundler.
   * `static/js/lib/http.js` holds `post()`. `static/js/lib/dom.js` holds `$`, `$$`, `esc`.
   * `static/js/components/<component>.js` holds the behaviour for one organism/molecule (`toast.js`, `job-card.js`, `board.js`).
   * `static/js/pages/<page>.js` wires components for one page.
-  * Components bind via `data-*` attributes (as today: `data-act`, `data-task`). No inline `onclick`.
+  * Components bind via `data-*` attributes (`data-act`, `data-task`, `data-open-dialog="#id"`, `data-autosubmit`, `data-reload`, `data-set-status`). No inline `onclick` / `onchange`.
   * Always escape interpolated HTML with `esc()`.
 
 ---
@@ -253,7 +260,7 @@ Before adding a helper, constant, macro, JS function or service method, search f
 
 When generating code, always:
 
-1. Put code in its target location per the structure above (and migrate what you touch)
+1. Put code in its feature folder per the structure above
 2. Keep routes and `run.py` thin; business logic in services and entities
 3. Keep SQL in repositories; keep third-party calls in `lib/`
 4. Inject dependencies; don't construct them inside services

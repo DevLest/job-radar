@@ -9,12 +9,15 @@ Canonical source: `CLAUDE.md` at the repo root. Keep this file in sync with it.
 
 Stack: Python 3.12 + Flask 3 + Jinja + vanilla JS/CSS (no build step) + SQLite + Anthropic SDK.
 
-## Target structure
+## Structure
 
 ```text
+run.py -> jobradar/cli/main.py
 jobradar/
-  app.py  container.py          app factory; composition root (wires dependencies)
-  domain/<feature>/             jobs, prefilter, scoring, applications, alerts, cv, preferences, usage
+  app.py  container.py          app factory; composition root (one Container per request / task)
+  cli/                          argparse + report/stats/dry-run commands
+  domain/<feature>/             jobs, applications, prefilter, scoring, alerts, cv, preferences, settings,
+                                usage, home, report
     <feature>.py                entity (dataclass + behaviour)
     <feature>_repository.py     SQL for its own table(s)
     <feature>_queries.py        reusable SQL fragments
@@ -22,10 +25,11 @@ jobradar/
     <feature>_mapper.py         entity -> view model / JSON
     <feature>_view.py           view-model dataclasses (DTOs)
     <feature>_routes.py         Flask Blueprint (thin)
-  sources/                      one *_source.py per feed + source_registry.py (JobSource Protocol)
-  pipeline/                     orchestration only (task runner, scheduler)
-  lib/                          database.py, llm_client.py, mail_client.py, http_client.py
+  sources/                      one <name>_source.py per feed + source_registry.py + feed_collector.py
+  pipeline/                     pipeline_steps, task_runner, scheduler, task_routes (orchestration only)
+  lib/                          database, llm_client, mail_client, email_text, http_client, env_file, key_value_store
   shared/utils  shared/constants
+  web/                          request_scope, responses, security, template_helpers, icons
   templates/components/{atoms,molecules,organisms}  templates/layouts  templates/pages
   static/css  static/js/{lib,components,pages}
 tests/                          pytest, mirrors jobradar/
@@ -48,15 +52,14 @@ Route/CLI -> Service -> Repository -> lib/database. Services use Entities for ru
 
 - SRP: one reason to change per module/class.
 - OCP: a new feed or status means adding a file or constant, not an `elif` chain.
-- LSP: every `JobSource` returns `list[Job]` and raises the same error type.
-- ISP: small Protocols (`JobSource`, `MailSender`, `LlmClient`).
+- LSP: every `JobSource` returns `list[JobPosting]` and raises the same error type.
+- ISP: small Protocols (`JobSource`, `CompanyBoardSource`; clients injected via `container.py`).
 - DIP: inject dependencies. `container.py` wires them, and tests pass fakes.
 
-## Migration policy
+## Keeping the structure
 
-The code today is flat (`web.py`, `scorer.py`, `sources.py`, `db.py`). Don't big-bang refactor.
-New code goes in the target structure. Code you touch moves to its target home in the same change.
-Refactor-only commits must not change behaviour.
+Every change lands in its feature folder. Refactor-only commits must not change behaviour.
+Split a file by responsibility before it passes ~200 lines. Only `container.py` constructs services.
 
 ## Product invariants (never break)
 

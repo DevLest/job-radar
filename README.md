@@ -90,13 +90,18 @@ python run.py ui | run [--batch] | alerts | fetch | score | updates | collect | 
 ## Files
 
 ```
-run.py                     CLI entry (python run.py ui = web app)
+run.py                     CLI entry (python run.py ui = web app) -> jobradar/cli/
 profile.yaml               your pay / work type / skills / filters (editable in the UI)
 .env                       API key + mailbox credentials (never sent to Claude; gitignored)
 jobs.db                    SQLite: jobs, scores, applications, timeline, CVs, token usage
 data/cv/                   uploaded CVs
-jobradar/sources.py        job feeds          jobradar/email_alerts.py  alert-email parsing
-jobradar/prefilter.py      free filter        jobradar/scorer.py        Claude scoring (real-time / batch)
-jobradar/cv.py             CV analysis        jobradar/applications.py  drafts, sending, update checks
-jobradar/mailer.py         IMAP/SMTP          jobradar/web.py + templates/  the UI
+jobradar/app.py            Flask app factory          jobradar/container.py   wires every service
+jobradar/domain/<feature>/ entity, repository, service, mapper, views and routes per feature
+                           (jobs, applications, prefilter, scoring, alerts, cv, preferences, ...)
+jobradar/sources/          one file per job feed      jobradar/pipeline/      task runner + scheduler
+jobradar/lib/              SQLite, Claude, IMAP/SMTP, HTTP wrappers
+jobradar/templates/        Atomic Design: components/{atoms,molecules,organisms}, layouts, pages
+jobradar/static/           css/ + js/ (ES modules, no build step)
 ```
+
+Architecture and coding rules for contributors (and AI assistants) are in `CLAUDE.md` and `.cursor/rules/`.

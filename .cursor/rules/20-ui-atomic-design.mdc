@@ -8,20 +8,20 @@ alwaysApply: false
 
 | Tier | Location | Examples |
 |---|---|---|
-| Atoms | `templates/components/atoms/` | icon, button, chip, badge, ring |
-| Molecules | `templates/components/molecules/` | work_chip, fit_chip, search_box, stat_tile, empty_state |
-| Organisms | `templates/components/organisms/` | job_card, apply_panel, board_column, task_progress |
+| Atoms | `templates/components/atoms/` (+ CSS-only atoms like `.btn`) | icon (global), chip, badge, ring, stat_icon |
+| Molecules | `templates/components/molecules/` | work_chip, stat_tile, empty_state, mini_job, timeline_item, pref_field |
+| Organisms | `templates/components/organisms/` | job_card, job_hero, apply_panel, board, status_track, sidebar, find_dialog |
 | Templates | `templates/layouts/` | base.html |
 | Pages | `templates/pages/` | jobs.html, job.html, applications.html |
 
 - One macro file per component, named after it (`atoms/chip.html` exposes `chip()`).
 - A tier imports only lower tiers.
-- Templates render only: no `loads()`, no computed fallbacks, no business decisions. Services/mappers pass ready view models (`JobCardView.pay_label`).
+- Templates render only: no `loads()`, no computed fallbacks, no business decisions. Services/mappers pass ready view models (`JobCardView.pay_short`).
 - Pages extend a layout and compose organisms.
-- CSS: tokens as custom properties in `static/css/tokens.css`, then one file per tier. Class names match components (`.job-card`). No inline styles except CSS variables.
+- CSS: tokens as custom properties in `static/css/tokens.css`. Link order (`STYLESHEETS` in `web/template_helpers.py`) is the cascade - don't reorder. Class names match components (`.job-card`). Prefer classes over adding new inline styles.
 - JS: ES modules via `<script type="module">`, no bundler.
   - `static/js/lib/` holds `http.js` (`post`) and `dom.js` (`$`, `$$`, `esc`).
   - `static/js/components/<name>.js` holds one component's behaviour.
   - `static/js/pages/<page>.js` wires components for a page.
-  - Bind with `data-*` attributes (`data-act`, `data-task`). No inline `onclick`. Always `esc()` interpolated HTML.
+  - Bind with `data-*` attributes (`data-act`, `data-task`, `data-open-dialog`, `data-autosubmit`, `data-reload`, `data-set-status`). No inline handlers. Always `esc()` interpolated HTML.
 - Match the existing JS style in the file you edit (single quotes, 2-space indent).
