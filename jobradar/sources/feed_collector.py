@@ -11,8 +11,14 @@ from .job_source import DEFAULT_MAX_AGE_DAYS, SourceQuery
 from .source_registry import BOARD_SOURCES, FEED_SOURCES
 
 
+def search_terms(profile: dict) -> list[str]:
+    """Your search terms, or your main skills when you haven't set any - one less thing to fill in."""
+    return ((profile.get("sources") or {}).get("search_terms")
+            or (profile.get("skills") or {}).get("primary") or [])
+
+
 def query_from(profile: dict) -> SourceQuery:
-    query = SourceQuery(terms=(profile.get("sources") or {}).get("search_terms") or [],
+    query = SourceQuery(terms=search_terms(profile),
                         max_age_days=(profile.get("filters") or {}).get("max_age_days") or DEFAULT_MAX_AGE_DAYS)
     work_types = (profile.get("work_setup") or {}).get("work_types")
     if work_types:
