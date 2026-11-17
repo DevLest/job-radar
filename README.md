@@ -260,8 +260,9 @@ python run.py ui | run [--batch] | alerts | fetch | score | updates | collect | 
 | Source | How | Notes |
 |---|---|---|
 | JobStreet PH, OnlineJobs.ph, LinkedIn (Philippines) | Public search pages, one request per search term | Jobs open to people in the Philippines. Snippets only, so scored as "Limited info" |
+| Kalibrr (Philippines) | Public search API, one request per search term | Full Philippine postings with pay and remote / hybrid / on-site flags, so they are scored on complete info |
 | LinkedIn, Indeed, JobStreet, OnlineJobs.ph | Your alert emails (IMAP, read-only) | Indeed blocks direct search, so use its alert emails. Senders are configurable in `profile.yaml → email_alerts.senders` |
-| Remotive, RemoteOK, Jobicy, Himalayas, We Work Remotely | Public APIs/RSS | International remote jobs. Jobs limited to other countries ("Remote - US") are filtered out for free |
+| Remotive, RemoteOK, Jobicy, Himalayas, We Work Remotely | Public APIs/RSS | International remote jobs. Jobicy and Himalayas are asked only for jobs open to the Philippines; on the others, jobs limited to other countries ("Remote - US") are filtered out for free |
 | Hacker News "Who is hiring?" | Algolia API | Monthly thread |
 | Greenhouse / Lever / Ashby company boards | Public ATS APIs | Add your target companies in Preferences → Where to search |
 | Arbeitnow | Public API | Mostly EU on-site (off by default) |

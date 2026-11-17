@@ -83,6 +83,7 @@ companies:
 sources:                        # set false to skip a source
   # Job sites for the Philippines - jobs you can apply to from the PH (local or international companies)
   jobstreet: true               # JobStreet Philippines
+  kalibrr: true                 # Kalibrr - full PH postings with pay + remote/hybrid flags
   onlinejobs: true              # OnlineJobs.ph (remote jobs hiring Filipinos)
   linkedin: true                # LinkedIn public job search, remote jobs open to the Philippines (no login)
   # International remote boards - jobs limited to other countries are skipped by the free filter

@@ -51,6 +51,7 @@ PREFS = [
                  "Searched directly - no account or login needed.",
          "grid": True,
          "fields": [("sources.jobstreet", "JobStreet", "switch", None, "ph.jobstreet.com"),
+                    ("sources.kalibrr", "Kalibrr", "switch", None, "Full postings with pay and work setup"),
                     ("sources.onlinejobs", "OnlineJobs.ph", "switch", None, "Foreign employers hiring Filipinos remotely"),
                     ("sources.linkedin", "LinkedIn", "switch", None, "Remote jobs open to the Philippines")]},
         {"title": "International remote sites", "collapsed": True,

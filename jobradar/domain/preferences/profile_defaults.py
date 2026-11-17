@@ -4,7 +4,7 @@ from ...shared.constants.work_types import WORK_TYPES
 
 DEFAULTS = {
     # Philippine job sites, searched directly (added after the first release, so on by default).
-    "sources": {"jobstreet": True, "onlinejobs": True, "linkedin": True},
+    "sources": {"jobstreet": True, "kalibrr": True, "onlinejobs": True, "linkedin": True},
     "email_alerts": {
         "enabled": True,
         "lookback_days": 7,
