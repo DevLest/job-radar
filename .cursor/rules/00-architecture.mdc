@@ -26,7 +26,8 @@ jobradar/
     <feature>_view.py           view-model dataclasses (DTOs)
     <feature>_routes.py         Flask Blueprint (thin)
   sources/                      one <name>_source.py per feed + source_registry.py + feed_collector.py
-  pipeline/                     pipeline_steps, task_runner, scheduler, task_routes (orchestration only)
+  pipeline/                     run_plan (steps per run, shared by UI/scheduler/CLI), pipeline_steps, task_runner,
+                                scheduler (auto runs + background batch collection), task_routes (orchestration only)
   lib/                          database, llm_client, mail_client, email_text, http_client, env_file, key_value_store
   shared/utils  shared/constants
   web/                          request_scope, responses, security, template_helpers, icons

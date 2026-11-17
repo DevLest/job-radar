@@ -112,7 +112,15 @@ Job Radar reads these emails for you.
 
 ### 5. Find jobs
 
-Click **Find jobs** (top right). A progress card shows each step and tells you how many new matches it found.
+Click **Find jobs** (top right). One click does everything that applies to you: reads your alert emails (if connected),
+searches every job site, skips what doesn't fit for free, rates the rest with AI, and checks your applications.
+A progress card shows each step and tells you how many new matches it found.
+
+Want only part of that, or half-price AI ratings? Click the **sliders** button next to Find jobs. Half-price ratings
+arrive within about an hour and are saved automatically while the app is open - there is nothing to collect by hand.
+
+When you save **Preferences**, your existing job list is re-checked with the new settings straight away (free).
+If you leave **Search terms** empty, your main skills are searched.
 
 ---
 
