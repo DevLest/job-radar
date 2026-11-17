@@ -1,0 +1,14 @@
+{"count": 2, "jobs": [
+  {"id": 229598, "name": "VueJS Developer Work From Home", "slug": "vuejs-developer-work-from-home",
+   "company_name": "ThinkBIT Solutions", "company": {"code": "thinkbit", "name": "ThinkBIT Solutions"},
+   "description": "<p>Write <strong>clean</strong> code</p>", "qualifications": "<ul><li>Vue JS</li></ul>",
+   "google_location": {"address_components": {"city": "Quezon City", "region": "NCR", "country": "Philippines"}},
+   "is_work_from_home": true, "is_hybrid": false, "salary_shown": true, "base_salary": 25000,
+   "maximum_salary": 35000, "salary_currency": "PHP", "salary_interval": null, "tenure": "Full time",
+   "function": "IT and Software", "activation_date": "2026-11-12T07:21:28.037953+00:00"},
+  {"id": 1001, "name": "Laravel Developer", "slug": "laravel-developer",
+   "company_name": "Acme", "company": {"code": "acme"}, "description": "PHP", "qualifications": null,
+   "google_location": {"address_components": {"city": "Makati", "country": "Philippines"}},
+   "is_work_from_home": false, "is_hybrid": false, "salary_shown": false, "base_salary": 1,
+   "maximum_salary": 2, "salary_currency": "PHP", "tenure": "Contract", "activation_date": "2026-11-10T00:00:00+00:00"}
+]}
