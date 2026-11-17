@@ -18,14 +18,15 @@ class HimalayasSource:
     def fetch(self, query: SourceQuery) -> list[JobPosting]:
         results = {}
         for term in query.terms_or_all:
-            data = self.http.get_json("https://himalayas.app/jobs/api/search", q=term)
+            # country=PH: only jobs you can do from the Philippines (PH-eligible or worldwide).
+            data = self.http.get_json("https://himalayas.app/jobs/api/search", q=term, country="PH")
             for item in data.get("jobs", []):
                 locations = item.get("locationRestrictions") or []
                 results[item["guid"]] = JobPosting(
                     source="himalayas", ext_id=item["guid"].rstrip("/").rsplit("/", 1)[-1],
                     title=item["title"], company=item["companyName"], url=item.get("applicationLink") or item["guid"],
                     description=strip_html(item.get("description")),
-                    location="Worldwide" if not locations else ", ".join(locations),
+                    location=self._location(locations),
                     tags=(item.get("categories") or []) + (item.get("seniority") or []),
                     salary_min=to_number(item.get("minSalary")), salary_max=to_number(item.get("maxSalary")),
                     salary_period=self.PERIODS.get(item.get("salaryPeriod"), "year"), currency=item.get("currency") or "",
@@ -33,3 +34,12 @@ class HimalayasSource:
                     posted_at=to_iso(item.get("pubDate")),
                 )
         return list(results.values())
+
+    @staticmethod
+    def _location(countries: list[str]) -> str:
+        """Long eligibility lists (often 80+ countries) shortened to what matters, to keep cards and prompts small."""
+        if not countries:
+            return "Worldwide"
+        if len(countries) > 3 and "Philippines" in countries:
+            return f"Philippines + {len(countries) - 1} other countries"
+        return ", ".join(countries)
