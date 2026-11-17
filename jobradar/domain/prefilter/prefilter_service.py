@@ -7,6 +7,8 @@ from ..jobs.job_repository import JobRepository
 from .prefilter_rules import check
 
 FIELDS = ("stage", "reject_reason", "kw_score")
+# Stages a job can be re-checked from when preferences change. Rated jobs are never touched again.
+UNRATED_STAGES = ("new", "rejected", "queued")
 
 
 class PrefilterService:
@@ -24,5 +26,10 @@ class PrefilterService:
             else:
                 job.queue(score)
                 passed += 1
-            self.jobs.save(job, *FIELDS)
+            self.jobs.save(job, *FIELDS, commit=False)
+        self.jobs.commit()
         return passed, rejected
+
+    def refilter(self, profile: dict) -> tuple[int, int]:
+        """Re-checks every unrated job against changed preferences. Free and fast."""
+        return self.run(profile, UNRATED_STAGES)

@@ -9,7 +9,6 @@
   <button class="btn" data-menu>{{ icon('more', 16) }} More</button>
   <div class="menu-list">
     <button data-open-dialog="#add-dialog">{{ icon('plus', 16) }} Add a job I found</button>
-    <button data-task="refilter">{{ icon('refresh', 16) }} Update list with my preferences</button>
     {% if nav.queued and configured.api %}<button data-task="score">{{ icon('sparkles', 16) }} Rate {{ nav.rate_now }} waiting jobs (~${{ '%.2f' % nav.est_queued }})</button>{% endif %}
     {% if nav.pending_batches %}<button data-task="collect">{{ icon('inbox', 16) }} Collect half-price ratings</button>{% endif %}
   </div>

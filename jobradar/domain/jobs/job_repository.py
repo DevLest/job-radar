@@ -74,10 +74,13 @@ class JobRepository:
             params = [*params, limit]
         return [_to_job(row) for row in self.db.query(sql, params)]
 
-    def save(self, job: Job, *names: str):
+    def save(self, job: Job, *names: str, commit: bool = True):
         assignments = ",".join(f"{name}=?" for name in names)
         self.db.execute(f"UPDATE jobs SET {assignments} WHERE id=?",
-                        [*(_column_value(job, name) for name in names), job.id])
+                        [*(_column_value(job, name) for name in names), job.id], commit=commit)
+
+    def commit(self):
+        self.db.commit()
 
     def set_status(self, job_id: str, status: str):
         self.db.execute("UPDATE jobs SET status=? WHERE id=?", (status, job_id))

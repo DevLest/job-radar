@@ -12,15 +12,16 @@ preferences_bp = Blueprint("preferences", __name__, url_prefix="/preferences")
 def page():
     service = container().preferences
     return render_template("pages/preferences.html", tabs=service.tabs(), values=service.form_values(),
-                           tab=request.args.get("tab", "work"), saved=request.args.get("saved"))
+                           tab=request.args.get("tab", "work"), saved=request.args.get("saved"),
+                           fitting=request.args.get("fitting", type=int))
 
 
 @preferences_bp.post("")
 def save():
     tab = request.form.get("_tab", "work")
     try:
-        container().preferences.save(request.form, tab)
+        fitting = container().preferences.save(request.form, tab)
     except PreferencesError as e:
         flash(str(e), "error")
         return redirect(url_for("preferences.page", tab=e.tab))
-    return redirect(url_for("preferences.page", tab=tab, saved=1))
+    return redirect(url_for("preferences.page", tab=tab, saved=1, fitting=fitting))
