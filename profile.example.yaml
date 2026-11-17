@@ -83,6 +83,7 @@ companies:
 sources:                        # set false to skip a source
   # Job sites for the Philippines - jobs you can apply to from the PH (local or international companies)
   jobstreet: true               # JobStreet Philippines
+  kalibrr: true                 # Kalibrr - full PH postings with pay + remote/hybrid flags
   onlinejobs: true              # OnlineJobs.ph (remote jobs hiring Filipinos)
   linkedin: true                # LinkedIn public job search, remote jobs open to the Philippines (no login)
   # International remote boards - jobs limited to other countries are skipped by the free filter
@@ -93,7 +94,7 @@ sources:                        # set false to skip a source
   weworkremotely: true
   hackernews: true              # monthly "Who is hiring?" thread
   arbeitnow: false              # mostly EU on-site; enable if relevant
-  search_terms: ["laravel", "php", "vue", "full stack"]   # used by sources that support search
+  search_terms: ["laravel", "php", "vue", "full stack"]   # used by sources that support search; empty = your primary skills
 
 # Job-alert emails (LinkedIn, Indeed, JobStreet, OnlineJobs.ph) read from your mailbox.
 # Set up the mailbox in the web UI -> Settings, then create alerts on those sites.

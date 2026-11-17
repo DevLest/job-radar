@@ -11,8 +11,8 @@ Log = Callable[[str], None]
 
 
 class PipelineSteps:
-    def __init__(self, container: Container):
-        self.c = container
+    def __init__(self, container: Container, limit: int | None = None):
+        self.c, self.limit = container, limit
 
     def fetch(self, profile: dict, log: Log):
         log("Fetching job feeds...")
@@ -38,6 +38,7 @@ class PipelineSteps:
 
     def score(self, profile: dict, log: Log, batch: bool = False, limit: int | None = None):
         log(f"Scoring with Claude ({'batch' if batch else 'real-time'})...")
+        limit = limit or self.limit
         if batch:
             self.c.batch_scoring.submit(profile, limit, log)
             if self.c.batch_scoring.collect(0, log):

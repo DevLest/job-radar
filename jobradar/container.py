@@ -155,7 +155,7 @@ class Container:
 
     @cached_property
     def preferences(self) -> PreferencesService:
-        return PreferencesService(self.profiles, self.meta)
+        return PreferencesService(self.profiles, self.meta, self.prefilter)
 
     @cached_property
     def settings(self) -> SettingsService:

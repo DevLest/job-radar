@@ -112,7 +112,15 @@ Job Radar reads these emails for you.
 
 ### 5. Find jobs
 
-Click **Find jobs** (top right). A progress card shows each step and tells you how many new matches it found.
+Click **Find jobs** (top right). One click does everything that applies to you: reads your alert emails (if connected),
+searches every job site, skips what doesn't fit for free, rates the rest with AI, and checks your applications.
+A progress card shows each step and tells you how many new matches it found.
+
+Want only part of that, or half-price AI ratings? Click the **sliders** button next to Find jobs. Half-price ratings
+arrive within about an hour and are saved automatically while the app is open - there is nothing to collect by hand.
+
+When you save **Preferences**, your existing job list is re-checked with the new settings straight away (free).
+If you leave **Search terms** empty, your main skills are searched.
 
 ---
 
@@ -260,8 +268,9 @@ python run.py ui | run [--batch] | alerts | fetch | score | updates | collect | 
 | Source | How | Notes |
 |---|---|---|
 | JobStreet PH, OnlineJobs.ph, LinkedIn (Philippines) | Public search pages, one request per search term | Jobs open to people in the Philippines. Snippets only, so scored as "Limited info" |
+| Kalibrr (Philippines) | Public search API, one request per search term | Full Philippine postings with pay and remote / hybrid / on-site flags, so they are scored on complete info |
 | LinkedIn, Indeed, JobStreet, OnlineJobs.ph | Your alert emails (IMAP, read-only) | Indeed blocks direct search, so use its alert emails. Senders are configurable in `profile.yaml → email_alerts.senders` |
-| Remotive, RemoteOK, Jobicy, Himalayas, We Work Remotely | Public APIs/RSS | International remote jobs. Jobs limited to other countries ("Remote - US") are filtered out for free |
+| Remotive, RemoteOK, Jobicy, Himalayas, We Work Remotely | Public APIs/RSS | International remote jobs. Jobicy and Himalayas are asked only for jobs open to the Philippines; on the others, jobs limited to other countries ("Remote - US") are filtered out for free |
 | Hacker News "Who is hiring?" | Algolia API | Monthly thread |
 | Greenhouse / Lever / Ashby company boards | Public ATS APIs | Add your target companies in Preferences → Where to search |
 | Arbeitnow | Public API | Mostly EU on-site (off by default) |

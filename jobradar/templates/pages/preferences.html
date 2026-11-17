@@ -4,8 +4,7 @@
 {% block header %}<h1>Preferences</h1><div class="sub">Tell us what you want. Jobs that don't fit are skipped for free, before any AI cost.</div>{% endblock %}
 {% block content %}
 {% if saved %}
-<div class="callout ok" style="align-items:center">{{ icon('check') }}<div style="flex:1"><b>Saved.</b> Want to re-check the jobs you already have with these preferences? It's free.</div>
-  <button class="btn sm" data-task="refilter">{{ icon('refresh', 14) }} Update my job list</button></div>
+<div class="callout ok" style="align-items:center">{{ icon('check') }}<div style="flex:1"><b>Saved.</b> Your job list was re-checked with these preferences (free){% if fitting is not none %}: {{ fitting }} unrated job{{ '' if fitting == 1 else 's' }} now fit and wait for an AI rating{% endif %}.</div></div>
 {% endif %}
 <form method="post" id="prefs-form">
   <input type="hidden" name="_tab" value="{{ tab }}">

@@ -14,7 +14,8 @@
     <header class="topbar">
       <div class="titles">{% block header %}{% endblock %}</div>
       {% block header_actions %}{% endblock %}
-      <button class="btn primary" data-open-find>{{ icon('search', 16) }} Find jobs</button>
+      <button class="btn ghost icon-btn" data-find-options title="Find jobs: options" aria-label="Find jobs options">{{ icon('sliders', 16) }}</button>
+      <button class="btn primary" data-open-find title="Searches every job site, skips what doesn't fit and rates the rest">{{ icon('search', 16) }} Find jobs</button>
     </header>
     <div class="content {% block content_class %}{% endblock %}">
       {% if not configured.api and request.endpoint != 'settings.page' %}

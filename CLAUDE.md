@@ -63,8 +63,9 @@ jobradar/
     source_registry.py          FEED_SOURCES / BOARD_SOURCES, in run order
     feed_collector.py           Runs every enabled source; one broken source never stops a run
 
-  pipeline/                     Orchestration only: pipeline_steps.py, task_runner.py, scheduler.py,
-                                task_routes.py (no business rules of their own)
+  pipeline/                     Orchestration only: run_plan.py (which steps a run does - shared by the
+                                Find jobs button, scheduler and CLI), pipeline_steps.py, task_runner.py,
+                                scheduler.py (auto runs + background batch collection), task_routes.py
 
   lib/                          Infrastructure wrappers (never import domain/)
     database.py + database_schema.py   Connection, schema, additive column migrations

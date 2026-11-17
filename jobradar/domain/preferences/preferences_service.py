@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ...lib.key_value_store import KeyValueStore
+from ..prefilter.prefilter_service import PrefilterService
 from ...shared.utils.dict_utils import get_path, set_path
 from .preference_fields import PREFS, SHOW_IF, all_fields
 from .preference_form_codec import from_form, to_form
@@ -58,8 +59,8 @@ def _collapsed_note(fields: list[PrefField]) -> str:
 
 
 class PreferencesService:
-    def __init__(self, profiles: ProfileRepository, meta: KeyValueStore):
-        self.profiles, self.meta = profiles, meta
+    def __init__(self, profiles: ProfileRepository, meta: KeyValueStore, prefilter: PrefilterService):
+        self.profiles, self.meta, self.prefilter = profiles, meta, prefilter
 
     def form_values(self) -> dict:
         profile = self.profiles.load()
@@ -81,8 +82,9 @@ class PreferencesService:
             tabs.append(tab)
         return tabs
 
-    def save(self, form, tab: str):
-        """Raises PreferencesError (with the tab to show) when the form is invalid."""
+    def save(self, form, tab: str) -> int:
+        """Saves, then re-checks the job list with the new preferences (free). Returns how many unrated
+        jobs now fit. Raises PreferencesError (with the tab to show) when the form is invalid."""
         profile = self.profiles.load()
         try:
             for path, _, kind, *_ in all_fields():
@@ -93,6 +95,8 @@ class PreferencesService:
             raise PreferencesError("Pick at least one way of working (remote, hybrid or on-site)", "work")
         self.profiles.save(profile)
         self.meta.set(SAVED_FLAG, "1")
+        passed, _rejected = self.prefilter.refilter(self.profiles.load())
+        return passed
 
     def were_saved(self) -> bool:
         return self.meta.get(SAVED_FLAG) == "1"

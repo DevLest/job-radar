@@ -45,12 +45,14 @@ PREFS = [
     ]),
     ("search", "Where to search", "search", [
         {"title": "What to search for", "desc": "Every job site below is searched with these words.",
-         "fields": [("sources.search_terms", "Search terms", "tags", None, "e.g. laravel, vue, full stack")]},
+         "fields": [("sources.search_terms", "Search terms", "tags", None,
+                     "e.g. laravel, vue, full stack. Leave empty to search for your main skills.")]},
         {"title": "Job sites for the Philippines",
          "desc": "Jobs open to people in the Philippines, from local and international companies. "
                  "Searched directly - no account or login needed.",
          "grid": True,
          "fields": [("sources.jobstreet", "JobStreet", "switch", None, "ph.jobstreet.com"),
+                    ("sources.kalibrr", "Kalibrr", "switch", None, "Full postings with pay and work setup"),
                     ("sources.onlinejobs", "OnlineJobs.ph", "switch", None, "Foreign employers hiring Filipinos remotely"),
                     ("sources.linkedin", "LinkedIn", "switch", None, "Remote jobs open to the Philippines")]},
         {"title": "International remote sites", "collapsed": True,

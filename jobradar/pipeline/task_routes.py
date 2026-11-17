@@ -6,30 +6,24 @@ from flask import Blueprint, abort, jsonify, request
 
 from ..web.request_scope import container, task_runner
 from .pipeline_steps import STEP_NAMES
+from .run_plan import plan_steps, run_context
 
 tasks_bp = Blueprint("tasks", __name__)
 BUSY = "Already running - wait for it to finish"
+FIND_OPTIONS = ("alerts", "fetch", "score", "updates")
 
 
-def find_tasks(options: dict, batch_pending: bool) -> list[str]:
-    """The 'Find jobs' dialog's choices -> task names, in run order."""
-    names = []
-    if options.get("alerts"):
-        names.append("alerts")
-    if options.get("feeds"):
-        names.append("fetch")
-    if options.get("score") == "now":
-        names.append("score")
-    elif options.get("score") == "batch":
-        names += ["collect", "batch"] if batch_pending else ["batch"]
-    if options.get("updates"):
-        names.append("updates")
-    return names
+def find_tasks(options: dict, profile: dict, context) -> list[str]:
+    """'Find jobs' -> task names. No options = one click: everything that applies, AI rating right away.
+    The options dialog can switch parts off or pick half-price rating."""
+    wanted = {name for name in FIND_OPTIONS if options.get(name)} if options else None
+    return plan_steps(profile, context, options.get("score_mode", "now"), wanted)
 
 
 @tasks_bp.post("/tasks/find")
 def find():
-    names = find_tasks(request.get_json(silent=True) or {}, container().batches.has_pending())
+    c = container()
+    names = find_tasks(request.get_json(silent=True) or {}, c.profiles.load(), run_context(c))
     if not names:
         return jsonify(ok=False, message="Pick at least one thing to do"), 400
     if not task_runner().start(names):
