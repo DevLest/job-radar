@@ -22,7 +22,7 @@ function renderProgress(s) {
     bits.push(m.new_matches > 0 ? `<b>${m.new_matches} new match${m.new_matches === 1 ? '' : 'es'}</b> for you.` : 'No new strong matches this time.');
     if (m.new_jobs) bits.push(`${m.new_jobs} new jobs checked.`);
     if (m.waiting) bits.push(`${m.waiting} waiting for an AI rating.`);
-    if (m.pending_batches) bits.push('Half-price ratings arrive within ~1 hour.');
+    if (m.pending_batches) bits.push('Half-price ratings arrive within ~1 hour and are saved automatically while the app is open.');
     sum.innerHTML = `<p style="margin:0 0 10px">${bits.join(' ')}</p>
       <div class="row"><a class="btn sm primary" href="/jobs?tab=${m.new_matches ? 'best' : 'rated'}">See jobs</a>
       <button class="btn sm" data-reload>Refresh page</button></div>`;
@@ -33,7 +33,7 @@ function renderProgress(s) {
 async function poll() {
   let s;
   try { s = await (await fetch('/api/task')).json(); } catch (e) { polling = false; return; }
-  $$('[data-task], [data-open-find]').forEach(b => b.disabled = s.running);
+  $$('[data-task], [data-open-find], [data-find-options]').forEach(b => b.disabled = s.running);
   if (s.running) sawRunning = true;
   if (s.running || (sawRunning && s.steps.length)) renderProgress(s);
   if (s.running) setTimeout(poll, 1200); else polling = false;

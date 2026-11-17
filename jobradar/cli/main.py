@@ -18,6 +18,7 @@ import argparse
 
 from ..container import Container, env_file
 from ..pipeline.pipeline_steps import PipelineSteps
+from ..pipeline.run_plan import plan_steps, run_context
 from . import commands
 
 COMMANDS = ["run", "ui", "alerts", "fetch", "score", "updates", "collect", "report", "dry-run", "stats"]
@@ -40,21 +41,15 @@ def run_pipeline(c: Container, args):
     profile = c.profiles.load()
     if args.command == "dry-run":
         return commands.dry_run(c, profile, args.limit)
-    steps = PipelineSteps(c)
-    if args.command in ("run", "alerts"):
-        steps.alerts(profile, print)
-    if args.command in ("run", "fetch"):
-        steps.fetch(profile, print)
-    if args.command in ("run", "score"):
-        if args.batch:
-            c.batch_scoring.collect(0)
-            steps.score(profile, print, batch=True, limit=args.limit)
-            if c.batch_scoring.collect(args.wait):
-                print("Batch submitted. Run `python run.py collect` later (usually < 1h).")
-        else:
-            steps.score(profile, print, limit=args.limit)
-    if args.command in ("run", "updates"):
-        steps.updates(profile, print)
+    wanted = None if args.command == "run" else {args.command}
+    names = plan_steps(profile, run_context(c), "batch" if args.batch else "now", wanted)
+    if wanted and not wanted & {name.replace("batch", "score") for name in names}:
+        print(f"Nothing to do for '{args.command}' - check Settings (AI key / mailbox) or your applications.")
+    steps = PipelineSteps(c, limit=args.limit).by_name()
+    for name in names:
+        steps[name](profile, print)
+    if "batch" in names and c.batch_scoring.collect(args.wait):
+        print("Batch submitted. Run `python run.py collect` later (usually < 1h), or keep the web UI open.")
     if args.command in ("run", "score"):
         commands.report(c, args.min_score)
 
